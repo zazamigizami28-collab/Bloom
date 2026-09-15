@@ -60,7 +60,7 @@ updateSpecial(pellet, 0);
 assert.equal(pellet.success, 1);
 assert.equal(pellet.flower.water, 0);
 assert.equal(pellet.flower.fertilizer, 0);
-assert.equal(pellet.breakMeter.value, T.break.perfect);
+assert.equal(pellet.breakMeter.value, 0);
 const hit = make();
 hit.debug.stopAI = false;
 hit.projectiles = [
@@ -199,4 +199,68 @@ for (const step of [10, 16, 34]) {
 }
 console.log(
   "PASS: three distinct shear poses, cue-to-parry path and recoil, frame-independent shortened roll.",
+);
+
+// v0.6.4: projectile rewards never fill or refresh BREAK, even near its threshold.
+for (const mode of ["boss", "practice"]) {
+  for (const kind of ["pellet", "water", "fertilizer"]) {
+    for (const age of [0, 100]) {
+      const g = new Practice(mode);
+      g.begin();
+      g.clock = 1000;
+      g.parryAt = g.clock - age;
+      g.breakMeter.add(99);
+      g.breakMeter.tick(100);
+      const before = JSON.stringify(g.breakMeter);
+      g.projectiles = [{ x: g.x + 5, y: g.y - 40, kind, direction: -1 }];
+      updateSpecial(g, 0);
+      assert.equal(g.success, 1);
+      assert.equal(JSON.stringify(g.breakMeter), before);
+      assert.equal(g.projectiles.length, 0);
+      assert.equal(g.flower.water, kind === "water" ? 1 : 0);
+      assert.equal(g.flower.fertilizer, kind === "fertilizer" ? 1 : 0);
+    }
+  }
+}
+for (const [age, gain, count] of [
+  [100, 19, 6],
+  [0, 25, 4],
+]) {
+  const g = make();
+  g.debug.stopAI = false;
+  g.boss.turn = 1;
+  for (let i = 1; i <= count; i++) {
+    g.restartCycle();
+    g.cycle = g.attackPattern.windup;
+    g.clock += 1000;
+    g.parryAt = g.clock - age;
+    updateEnemy(g, 0);
+    assert.equal(g.breakMeter.value, Math.min(100, i * gain));
+    assert.equal(g.breakMeter.broken, i === count);
+  }
+}
+const start = new Practice("boss");
+const checkStart = () => {
+  assert.equal(start.enemyX - start.x, 455);
+  assert(start.enemyX - start.x > T.boss.meleeRange + T.player.width / 2);
+};
+checkStart();
+start.begin();
+checkStart();
+for (const type of ["reset", "replay"]) {
+  start.x = 600;
+  start.command({ type });
+  checkStart();
+}
+start.x = 600;
+start.hp = 0;
+start.deadAt = start.clock;
+for (let i = 0; i < 29 && start.deadAt >= 0; i++) start.update({}, 34);
+checkStart();
+start.command({ type: "mode", value: "practice" });
+assert.equal(start.x, 610);
+start.command({ type: "mode", value: "boss" });
+checkStart();
+console.log(
+  "PASS: all ranged parries preserve BREAK and growth rewards; 19/25 melee accumulation and 6/4 thresholds; safe boss starts across lifecycle.",
 );

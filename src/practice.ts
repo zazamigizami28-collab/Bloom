@@ -17,6 +17,7 @@ export class Practice extends GameState {
   constructor(mode: "practice" | "boss" = "practice") {
     super();
     this.mode = mode;
+    this.x = mode === "boss" ? T.boss.playerStartX : 610;
   }
   debug = { stopAI: false, invincible: false, speed: 1 };
   events: GameEvent[] = [];
@@ -103,7 +104,7 @@ export class Practice extends GameState {
     this.rollReady = 0;
     this.rollFace = 1;
     this.hp = T.player.hp;
-    this.x = 610;
+    this.x = this.mode === "boss" ? T.boss.playerStartX : 610;
     this.y = T.world.ground;
     this.vy = 0;
     this.face = 1;

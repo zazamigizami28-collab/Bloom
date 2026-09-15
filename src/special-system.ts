@@ -32,7 +32,6 @@ export function updateSpecial(game: Practice, dt: number) {
             grade === "perfect" ? T.parry.perfectStop : T.parry.stop;
           game.emit({ type: "sound", kind: grade });
           game.emit({ type: "impact", x: p.x, y: p.y, kind: grade });
-          game.addBreak(T.break[grade]);
           game.say("圧縮弾を弾いた！", 700);
           return false;
         }
@@ -50,7 +49,6 @@ export function updateSpecial(game: Practice, dt: number) {
             ? `水を吸収！ ${game.flower.name} / 水 ${game.flower.water} / ${T.flower.thresholds[3]}`
             : `肥料を吸収！ 攻撃力 +${game.flower.fertilizer * T.flower.fertilizerDamage}`,
         );
-        game.addBreak(T.special.breakGain);
         if (opened) announceBloom(game);
       } else {
         game.combo = 0;

@@ -42,8 +42,8 @@ export const tuning = {
   },
   break: {
     max: 100,
-    parry: 28,
-    perfect: 38,
+    parry: 19,
+    perfect: 25,
     attack: 4,
     duration: 3000,
     damageMultiplier: 1,
@@ -54,6 +54,7 @@ export const tuning = {
   finisher: { damage: 38, startup: 220, recovery: 650, stop: 190 },
   flower: { thresholds: [0, 1, 2, 3], fertilizerMax: 3, fertilizerDamage: 2 },
   boss: {
+    playerStartX: 300,
     width: 150,
     height: 295,
     speed: 82,
@@ -84,7 +85,7 @@ export const tuning = {
     waveDamage: 14,
     waveBreak: 8,
   },
-  special: { speed: 280, radius: 10, breakGain: 12, stop: 90 },
+  special: { speed: 280, radius: 10, stop: 90 },
   world: { ground: 454, left: 45, right: 980 },
   feedback: {
     shake: 0.006,
