@@ -65,7 +65,7 @@ class Garden extends Phaser.Scene {
       })
       .setOrigin(0.5);
     this.label = this.add
-      .text(T.dummy.x, 285, "", {
+      .text(T.dummy.x, 210, "", {
         fontFamily: "sans-serif",
         fontSize: "14px",
         color: "#233d33",
@@ -129,6 +129,7 @@ class Garden extends Phaser.Scene {
       (duration, intensity) => this.cameras.main.shake(duration, intensity),
     );
     const state = snapshot(this.model);
+    this.label.setPosition(state.enemyX, state.mode === "boss" ? 140 : 285);
     renderControls(state);
     drawScene(state, this, this.sparks);
   }

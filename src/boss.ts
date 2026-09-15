@@ -1,12 +1,8 @@
 import { tuning as T, type AttackPattern } from "./data";
 const irrigation: AttackPattern = {
-  name: "散水三連",
+  name: "給水パルス",
   windup: 950,
-  events: [
-    { at: 0, kind: "water" },
-    { at: 620, kind: "water" },
-    { at: 1240, kind: "water" },
-  ],
+  events: [{ at: 0, kind: "water" }],
 };
 const shears: AttackPattern = {
   name: "剪定二連",
@@ -34,21 +30,20 @@ const rush: AttackPattern = {
   ],
 };
 const quake: AttackPattern = {
-  name: "根の衝撃：ジャンプ",
+  name: "土壌転圧：ジャンプ",
   windup: 1300,
   events: [{ at: 0, kind: "quake" }],
 };
 const mixed: AttackPattern = {
-  name: "過給散水",
+  name: "過給給水・施肥",
   windup: 900,
   events: [
     { at: 0, kind: "water" },
-    { at: 480, kind: "water" },
-    { at: 960, kind: "water" },
     { at: 1700, kind: "fertilizer" },
   ],
 };
 export class Boss {
+  x = T.dummy.x;
   phase = 1;
   turn = 0;
   transition = 0;
@@ -59,6 +54,21 @@ export class Boss {
         ? [irrigation, shears, feed, shears]
         : [mixed, rush, quake, feed, rush];
     return sequence[this.turn % sequence.length];
+  }
+  move(dt: number, targetX: number) {
+    const delta = targetX - this.x;
+    const travel = Math.min(
+      Math.max(0, Math.abs(delta) - T.boss.approachDistance),
+      (T.boss.speed * dt) / 1000,
+    );
+    this.x = Math.max(
+      T.world.left + T.boss.width / 2,
+      Math.min(
+        T.world.right - T.boss.width / 2,
+        this.x + Math.sign(delta) * travel,
+      ),
+    );
+    this.facing = targetX < this.x ? -1 : 1;
   }
   next() {
     this.turn++;
@@ -76,6 +86,7 @@ export class Boss {
     this.transition = Math.max(0, this.transition - dt);
   }
   reset() {
+    this.x = T.dummy.x;
     this.phase = 1;
     this.turn = 0;
     this.transition = 0;

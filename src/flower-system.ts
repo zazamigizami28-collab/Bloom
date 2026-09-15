@@ -1,6 +1,6 @@
 import type { Practice } from "./practice";
 import { tuning as T } from "./data";
-import { dummyRect, overlaps } from "./combat";
+import { overlaps } from "./combat";
 export function announceBloom(game: Practice) {
   game.emit({ type: "bloom", x: game.x, y: game.y - 100 });
   game.emit({ type: "sound", kind: "bloom" });
@@ -49,7 +49,7 @@ export function updateWaves(game: Practice, dt: number) {
           width: Math.abs(w.x - from) + r * 2,
           height: r * 2,
         },
-        dummyRect(),
+        game.enemyRect,
       )
     ) {
       game.hitDummy(w.damage);

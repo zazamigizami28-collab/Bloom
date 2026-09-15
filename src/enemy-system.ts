@@ -5,6 +5,15 @@ export function updateEnemy(game: Practice, dt: number) {
   if (!game.debug.stopAI && !game.breakMeter.broken && game.defeatedAt < 0)
     game.cycle += dt;
   const p = game.attackPattern;
+  // Travel only before the committed windup; telegraphs and contact stay still.
+  if (
+    game.mode === "boss" &&
+    !game.debug.stopAI &&
+    !game.breakMeter.broken &&
+    game.defeatedAt < 0 &&
+    game.cycle < p.windup * T.boss.moveUntil
+  )
+    game.boss.move(dt, game.x);
   p.events.forEach((event, i) => {
     if (game.debug.stopAI || game.breakMeter.broken || game.defeatedAt >= 0)
       return;
@@ -15,7 +24,7 @@ export function updateEnemy(game: Practice, dt: number) {
       if (time >= 0 && !game.resolved.has(i)) {
         game.resolved.add(i);
         game.projectiles.push({
-          x: T.dummy.x + game.enemyFacing * 50,
+          x: game.enemyX + game.enemyFacing * 50,
           y: T.world.ground - 42,
           kind,
           direction: game.enemyFacing,
@@ -35,7 +44,7 @@ export function updateEnemy(game: Practice, dt: number) {
         game.emit({ type: "sound", kind: "quake" });
         game.emit({ type: "shake", duration: 160, intensity: 0.006 });
         if (
-          Math.abs(game.x - T.dummy.x) < T.boss.quakeRange &&
+          Math.abs(game.x - game.enemyX) < T.boss.quakeRange &&
           game.y > T.world.ground - T.boss.quakeHeight &&
           game.clock - game.hurtAt > T.player.invulnerability
         ) {
@@ -56,7 +65,7 @@ export function updateEnemy(game: Practice, dt: number) {
       game.emit({ type: "sound", kind: "cue" });
     }
     if (time >= 0 && time < T.dummy.active && !game.resolved.has(i)) {
-      const dx = (game.x - T.dummy.x) * game.enemyFacing;
+      const dx = (game.x - game.enemyX) * game.enemyFacing;
       if (dx > 0 && dx < T.dummy.range && game.y > T.world.ground - 95) {
         game.resolved.add(i);
         game.attempts++;

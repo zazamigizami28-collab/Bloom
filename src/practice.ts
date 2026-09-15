@@ -6,7 +6,7 @@ import {
 } from "./flower-system";
 import type { PracticeCommand } from "./commands";
 import { tuning as T } from "./data";
-import { attackRect, dummyRect, overlaps, attackActive } from "./combat";
+import { attackRect, overlaps, attackActive } from "./combat";
 import { GameState } from "./game-state";
 import type { ActionInput } from "./actions";
 import type { GameEvent } from "./events";
@@ -92,7 +92,7 @@ export class Practice extends GameState {
     this.paused = v;
   }
   restartCycle() {
-    if (this.mode === "boss") this.boss.facing = this.x < T.dummy.x ? -1 : 1;
+    if (this.mode === "boss") this.boss.facing = this.x < this.enemyX ? -1 : 1;
     this.cycle = -500;
     this.resolved.clear();
     this.cued.clear();
@@ -149,7 +149,7 @@ export class Practice extends GameState {
       this.emit({ type: "sound", kind: "break" });
       this.emit({
         type: "impact",
-        x: T.dummy.x - 25,
+        x: this.enemyX - 25,
         y: T.world.ground - 65,
         kind: "break",
       });
@@ -174,11 +174,8 @@ export class Practice extends GameState {
       this.breakMeter.reset();
       this.restartCycle();
       this.emit({ type: "sound", kind: "phase" });
-      this.emit({ type: "bloom", x: T.dummy.x, y: T.world.ground - 90 });
-      this.say(
-        "温室の番人・過給運転  /  橙の地面はジャンプ",
-        T.boss.transition,
-      );
+      this.emit({ type: "bloom", x: this.enemyX, y: T.world.ground - 90 });
+      this.say("HRT-01・過給運転  /  橙の地面はジャンプ", T.boss.transition);
     }
     if (this.dummyHP === 0) {
       this.defeatedAt = this.clock;
@@ -188,7 +185,7 @@ export class Practice extends GameState {
       if (this.mode === "boss") {
         this.waves = [];
         this.emit({ type: "sound", kind: "victory" });
-        this.emit({ type: "bloom", x: T.dummy.x, y: T.world.ground - 110 });
+        this.emit({ type: "bloom", x: this.enemyX, y: T.world.ground - 110 });
         this.say("温室に、穏やかな風が戻った。", 999999);
       } else this.say("稽古達成！ 練習機を再起動中", T.dummy.resetDelay);
     }
@@ -261,7 +258,7 @@ export class Practice extends GameState {
         this.recoil = 28;
         this.emit({
           type: "impact",
-          x: T.dummy.x - 12,
+          x: this.enemyX - 12,
           y: T.world.ground - 65,
           kind: "finisher",
         });
@@ -286,7 +283,7 @@ export class Practice extends GameState {
       input.attack &&
       this.breakMeter.broken &&
       this.defeatedAt < 0 &&
-      overlaps(attackRect(this.x, this.y, this.face), dummyRect())
+      overlaps(attackRect(this.x, this.y, this.face), this.enemyRect)
     ) {
       this.finisherAt = this.clock;
       this.finisherDone = false;
@@ -317,7 +314,7 @@ export class Practice extends GameState {
       this.defeatedAt < 0 &&
       !this.attackHit &&
       attackActive(age) &&
-      overlaps(attackRect(this.x, this.y, this.attackFace), dummyRect())
+      overlaps(attackRect(this.x, this.y, this.attackFace), this.enemyRect)
     ) {
       this.attackHit = true;
       const damage = this.flower.damage(T.weapon.damage);
@@ -327,7 +324,7 @@ export class Practice extends GameState {
       this.recoil = 8;
       this.emit({
         type: "impact",
-        x: T.dummy.x - 20,
+        x: this.enemyX - 20,
         y: this.y - 45,
         kind: "hit",
       });

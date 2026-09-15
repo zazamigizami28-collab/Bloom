@@ -13,7 +13,7 @@ const boss = () => {
 };
 const a = boss();
 assert.equal(a.dummyHP, 650);
-assert.equal(a.attackPattern.name, "散水三連");
+assert.equal(a.attackPattern.name, "給水パルス");
 a.cycle = 10000;
 finishEnemyCycle(a);
 assert.equal(a.attackPattern.name, "剪定二連");
@@ -135,4 +135,61 @@ assert.equal(finish.boss.turn, 1);
 assert.equal(finish.dummyHP, 612);
 console.log(
   "PASS: boss advances to next move after BREAK timeout or finisher, avoiding repeated irrigation lock.",
+);
+
+// v0.6.1: moving geometry, committed telegraphs, lifecycle, and growth cadence.
+const moving = boss();
+moving.x = 200;
+const originalX = moving.enemyX;
+for (let i = 0; i < 20; i++) moving.update({}, 20);
+assert(moving.enemyX < originalX);
+assert.equal(moving.enemyRect.x, moving.enemyX - T.boss.width / 2);
+assert.equal(moving.enemyHeight, T.player.height * 5);
+const stoppedX = moving.enemyX;
+moving.pause(true);
+moving.update({}, 34);
+assert.equal(moving.enemyX, stoppedX);
+moving.pause(false);
+moving.cycle = moving.attackPattern.windup * T.boss.moveUntil;
+updateEnemy(moving, 20);
+assert.equal(moving.enemyX, stoppedX);
+moving.addBreak(100);
+updateEnemy(moving, 20);
+assert.equal(moving.enemyX, stoppedX);
+moving.command({ type: "mode", value: "practice" });
+assert.equal(moving.enemyX, T.dummy.x);
+assert.equal(moving.enemyHeight, T.dummy.height);
+moving.command({ type: "mode", value: "boss" });
+assert.equal(moving.boss.x, T.dummy.x);
+const relocated = boss();
+relocated.boss.x = 400;
+relocated.x = 300;
+relocated.boss.turn = 1;
+relocated.restartCycle();
+relocated.cycle = 895;
+relocated.parryAt = relocated.clock;
+updateEnemy(relocated, 10);
+assert.equal(relocated.success, 1);
+const watering = boss();
+watering.boss.x = 500;
+watering.cycle = watering.attackPattern.windup;
+updateEnemy(watering, 1);
+assert.equal(watering.projectiles[0].x, 450);
+assert.equal(
+  watering.attackPattern.events.filter((e) => e.kind === "water").length,
+  1,
+);
+watering.boss.phase = 2;
+assert.equal(
+  watering.attackPattern.events.filter((e) => e.kind === "water").length,
+  1,
+);
+const growthEach = boss();
+for (let stage = 1; stage <= 3; stage++) {
+  growthEach.flower.absorb("water");
+  assert.equal(growthEach.flower.stage, stage);
+}
+assert.equal(growthEach.flower.remaining, 20000);
+console.log(
+  "PASS: v0.6.1 moving boss geometry/contact/projectile origin, windup stop, pause/BREAK stop, mode reset, 5x height, one water per stage and reduced irrigation.",
 );

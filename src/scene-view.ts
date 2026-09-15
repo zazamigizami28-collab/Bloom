@@ -42,7 +42,7 @@ export function drawScene(
   else
     dummy(
       g,
-      T.dummy.x,
+      scene.enemyX,
       T.world.ground,
       scene.breakMeter.broken || scene.defeatedAt >= 0 ? 0 : wind,
       active,
@@ -74,14 +74,14 @@ export function drawScene(
   ) {
     g.lineStyle(3, 0xfff1a0, 1);
     g.strokeCircle(
-      T.dummy.x + scene.enemyFacing * 73,
+      scene.enemyX + scene.enemyFacing * 73,
       T.world.ground - 150,
       12 + Math.sin(scene.clock / 40) * 4,
     );
     g.lineBetween(
-      T.dummy.x + scene.enemyFacing * 96,
+      scene.enemyX + scene.enemyFacing * 96,
       T.world.ground - 150,
-      T.dummy.x + scene.enemyFacing * 50,
+      scene.enemyX + scene.enemyFacing * 50,
       T.world.ground - 150,
     );
   }
@@ -89,7 +89,7 @@ export function drawScene(
     g.lineStyle(6, 0xffe7a6, 0.8);
     g.beginPath();
     g.arc(
-      T.dummy.x + scene.enemyFacing * 10,
+      scene.enemyX + scene.enemyFacing * 10,
       T.world.ground - 68,
       130,
       scene.enemyFacing < 0 ? Math.PI * 0.86 : -Math.PI * 0.4,
@@ -194,7 +194,7 @@ export function drawScene(
   if (scene.clock - scene.finisherAt < T.finisher.startup) {
     g.lineStyle(3, 0xffedb5);
     g.strokeCircle(
-      T.dummy.x,
+      scene.enemyX,
       T.world.ground - 65,
       28 + Math.sin(scene.clock / 35) * 4,
     );
@@ -203,10 +203,11 @@ export function drawScene(
   if (checked("hitboxes")) {
     g.lineStyle(1, 0xff667a);
     g.strokeRect(scene.x - 15, scene.y - 59, 30, 59);
-    g.strokeRect(T.dummy.x - 35, T.world.ground - 118, 70, 118);
+    const box = scene.enemyRect;
+    g.strokeRect(box.x, box.y, box.width, box.height);
     if (active)
       g.strokeRect(
-        scene.enemyFacing < 0 ? T.dummy.x - T.dummy.range : T.dummy.x,
+        scene.enemyFacing < 0 ? scene.enemyX - T.dummy.range : scene.enemyX,
         T.world.ground - 95,
         T.dummy.range,
         95,
@@ -259,7 +260,7 @@ export function drawScene(
     470 *
       (scene.flower.blooming
         ? scene.flower.remaining / T.bloom.duration
-        : scene.flower.water / 6),
+        : scene.flower.water / T.flower.thresholds[3]),
     3,
   );
   view.breakText.setText(
@@ -270,10 +271,10 @@ export function drawScene(
   view.flowerText.setText(
     scene.flower.blooming
       ? `ひまわり 開花 ${(scene.flower.remaining / 1000).toFixed(1)}秒  / 攻撃 +${T.bloom.attackBonus}\n通常攻撃＋花風  ${scene.flower.waveCooldown > 0 ? `あと${(scene.flower.waveCooldown / 1000).toFixed(1)}秒` : "次の攻撃に追加"}`
-      : `ひまわり  ${scene.flower.name}  水${scene.flower.water}/6\n${6 - scene.flower.water}回の散水パリィで開花 / 開花中は通常攻撃に花風を追加`,
+      : `ひまわり  ${scene.flower.name}  水${scene.flower.water}/${T.flower.thresholds[3]}\n${T.flower.thresholds[3] - scene.flower.water}回の散水パリィで開花 / 開花中は通常攻撃に花風を追加`,
   );
   view.hud.setText(
-    `花守り  ${"●".repeat(Math.max(0, scene.hp))}${"○".repeat(T.player.hp - Math.max(0, scene.hp))}\n${scene.flower.name}  水${scene.flower.water}/6 肥料${scene.flower.fertilizer}/3`,
+    `花守り  ${"●".repeat(Math.max(0, scene.hp))}${"○".repeat(T.player.hp - Math.max(0, scene.hp))}\n${scene.flower.name}  水${scene.flower.water}/${T.flower.thresholds[3]} 肥料${scene.flower.fertilizer}/3`,
   );
   view.readout.setText(
     `連続成功  ${String(scene.combo).padStart(2, "0")}   /   BEST ${String(scene.best).padStart(2, "0")}\n成功 ${scene.success} / 接触 ${scene.attempts}`,
@@ -287,7 +288,7 @@ export function drawScene(
           : "打撃はK / RB。水と肥料も受け止めよう"
         : scene.x < 570
           ? "練習機に近づこう →"
-          : scene.x > T.dummy.x
+          : scene.x > scene.enemyX
             ? "← 左側から向き合おう"
             : scene.pattern === "water" ||
                 scene.pattern === "fertilizer" ||
@@ -297,7 +298,7 @@ export function drawScene(
   );
   view.label.setText(
     scene.mode === "boss"
-      ? `温室の番人・ハルド  ${scene.boss.phase === 1 ? "通常運転" : "過給運転"}\n${scene.defeatedAt >= 0 ? "鎮静完了" : scene.breakMeter.broken ? "BREAK — 決めの一撃" : p.name}\n${scene.dummyHP} / ${scene.enemyHPMax}`
+      ? `園芸管理機 HRT-01  ${scene.boss.phase === 1 ? "通常運転" : "過給運転"}\n${scene.defeatedAt >= 0 ? "鎮静完了" : scene.breakMeter.broken ? "BREAK — 決めの一撃" : p.name}\n${scene.dummyHP} / ${scene.enemyHPMax}`
       : `${scene.breakMeter.broken ? "機能停止 / 攻撃チャンス" : scene.defeatedAt >= 0 ? "再起動中" : p.name}\n練習機 ${scene.dummyHP} / ${T.dummy.hp}`,
   );
 }

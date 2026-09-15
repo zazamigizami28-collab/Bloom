@@ -11,6 +11,23 @@ export class GameState {
   get attackPattern() {
     return this.mode === "boss" ? this.boss.pattern : patterns[this.pattern];
   }
+  get enemyX() {
+    return this.mode === "boss" ? this.boss.x : T.dummy.x;
+  }
+  get enemyWidth() {
+    return this.mode === "boss" ? T.boss.width : T.dummy.width;
+  }
+  get enemyHeight() {
+    return this.mode === "boss" ? T.boss.height : T.dummy.height;
+  }
+  get enemyRect() {
+    return {
+      x: this.enemyX - this.enemyWidth / 2,
+      y: T.world.ground - this.enemyHeight,
+      width: this.enemyWidth,
+      height: this.enemyHeight,
+    };
+  }
   get enemyHPMax() {
     return this.mode === "boss" ? T.boss.hp : T.dummy.hp;
   }
@@ -91,6 +108,10 @@ export function snapshot(state: GameState) {
   return {
     mode: state.mode,
     boss: { phase: state.boss.phase, transition: state.boss.transition },
+    enemyX: state.enemyX,
+    enemyWidth: state.enemyWidth,
+    enemyHeight: state.enemyHeight,
+    enemyRect: state.enemyRect,
     enemyFacing: state.enemyFacing,
     enemyHPMax: state.enemyHPMax,
     attackPattern: {
