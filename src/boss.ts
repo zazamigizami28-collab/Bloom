@@ -98,22 +98,50 @@ export class Boss {
           ]
         : [mixed, rush, quake, shears, charge, overhead, mixed, rising, shears];
     const base = this.selected ?? sequence[this.turn % sequence.length];
+    // Distinct rhythms; ranged cadence stays as evaluated in v0.6.7.
+    const rhythm =
+      base === shears
+        ? [0, 360, 1560, 2440]
+        : base === overhead
+          ? [0, 900, 1720, 2820]
+          : base === rising
+            ? [0, 680, 1500, 2460]
+            : base === quick
+              ? [0, 280, 1160, 2020]
+              : base === charge
+                ? [0, 1000, 1820, 2920]
+                : base === rear
+                  ? [0, 780, 1740, 2660]
+                  : base === quake
+                    ? [0, 680, 1560, 2540]
+                    : [0, 320, 1420, 2520];
+    const ranged = base === irrigation || base === mixed;
     const events = [...base.events];
-    while (events.length < 3) {
-      const last = events[events.length - 1];
-      events.push({
-        at: last.at + 820,
-        kind: "metal",
-        shear: events.length === 1 ? "rising" : "sweep",
-      });
-    }
-    if (this.phase === 2) {
-      const last = events[events.length - 1];
+    while (events.length < 3)
+      events.push({ at: 0, kind: "metal", shear: "sweep" });
+    if (this.phase === 2)
       events.push(
         base === charge || base === rush || base === overhead
-          ? { at: last.at + 1100, kind: "quake" }
-          : { at: last.at + 850, kind: "metal", shear: "sweep" },
+          ? { at: 0, kind: "quake" }
+          : { at: 0, kind: "metal", shear: "sweep" },
       );
+    for (let i = 0; i < events.length; i++) {
+      const event = events[i];
+      events[i] = {
+        ...event,
+        at: ranged
+          ? i < 3
+            ? base.events[i].at
+            : base.events[2].at + 950
+          : rhythm[i],
+        unblockable:
+          event.unblockable ||
+          (!ranged && i === events.length - 1 && event.kind === "metal"),
+        shear:
+          !ranged && i === events.length - 1 && event.kind === "metal"
+            ? "overhead"
+            : event.shear,
+      };
     }
     return {
       ...base,

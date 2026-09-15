@@ -316,7 +316,7 @@ for (const distance of [150, 280, 500]) {
   const base = extension.pattern.events;
   extension.phase = 2;
   assert.equal(extension.pattern.events.length, base.length + 1);
-  assert.deepEqual(extension.pattern.events.slice(0, -1), base);
+  assert.deepEqual(extension.pattern.events.slice(0, 2), base.slice(0, 2));
 }
 const short = make();
 short.boss.next(short.enemyX - 150);
@@ -364,4 +364,45 @@ for (const event of aim.attackPattern.events) {
 assert.equal(T.special.radius, 18);
 console.log(
   "PASS: three/four-hit patterns, no boss fertilizer/back attacks, third-shot water, per-hit aim lock, enlarged projectile radius.",
+);
+
+const signatures = new Set();
+for (const turn of [1, 3, 4, 6]) {
+  const b = new Boss();
+  b.turn = turn;
+  signatures.add(b.pattern.events.map((e) => e.at).join(","));
+}
+assert.equal(signatures.size, 4);
+for (const phase of [1, 2]) {
+  for (const roll of [false, true]) {
+    const g = make();
+    g.debug.stopAI = false;
+    g.boss.phase = phase;
+    g.boss.turn = 1;
+    const p = g.attackPattern,
+      last = p.events.at(-1);
+    assert(last.unblockable || last.kind === "quake");
+    assert(last.at - p.events.at(-2).at >= T.boss.dangerLead + T.dummy.active);
+    g.cycle = p.windup + last.at - T.boss.dangerLead;
+    g.resolved = new Set(p.events.slice(0, -1).map((_, i) => i));
+    g.x = g.enemyX - 120;
+    g.face = 1;
+    g.drainEvents();
+    updateEnemy(g, 0);
+    updateEnemy(g, 0);
+    assert.equal(
+      g.events.filter((e) => e.type === "sound" && e.kind === "quakeCue")
+        .length,
+      1,
+    );
+    g.cycle = p.windup + last.at;
+    g.parryAt = g.clock;
+    if (roll) g.rollAt = g.clock;
+    updateEnemy(g, 0);
+    assert.equal(g.success, 0);
+    assert.equal(g.hp, roll ? 5 : 4);
+  }
+}
+console.log(
+  "PASS: distinct attack rhythms, red final-hit lead, single warning, final parry rejection and roll escape.",
 );

@@ -35,7 +35,17 @@ export function drawScene(
     wind =
       next === undefined
         ? 0
-        : Phaser.Math.Clamp(1 + time / (next.at === 0 ? p.windup : 400), 0, 1),
+        : Phaser.Math.Clamp(
+            1 +
+              time /
+                (next.at === 0
+                  ? p.windup
+                  : next.unblockable
+                    ? T.boss.dangerLead
+                    : 400),
+            0,
+            1,
+          ),
     active =
       scene.boss.transition === 0 &&
       !scene.breakMeter.broken &&
