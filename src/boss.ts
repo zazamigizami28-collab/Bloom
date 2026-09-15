@@ -1,14 +1,11 @@
 import { tuning as T, type AttackPattern } from "./data";
 const irrigation: AttackPattern = {
   name: "噴水ノズル・交互射出",
-  windup: 800,
-  rest: 300,
+  windup: 950,
   events: [
     { at: 0, kind: "pellet" },
-    { at: 520, kind: "water" },
-    { at: 720, kind: "metal", shear: "sweep", back: true },
-    { at: 1040, kind: "pellet" },
-    { at: 1400, kind: "metal", shear: "rising" },
+    { at: 520, kind: "pellet" },
+    { at: 1040, kind: "water" },
   ],
 };
 const shears: AttackPattern = {
@@ -16,19 +13,7 @@ const shears: AttackPattern = {
   windup: 900,
   events: [
     { at: 0, kind: "metal", shear: "sweep" },
-    { at: 680, kind: "metal", shear: "overhead", back: true },
-  ],
-};
-const feed: AttackPattern = {
-  name: "施肥ホッパー・圧縮弾",
-  windup: 850,
-  rest: 300,
-  events: [
-    { at: 0, kind: "pellet" },
-    { at: 520, kind: "fertilizer" },
-    { at: 720, kind: "metal", shear: "sweep", back: true },
-    { at: 1040, kind: "pellet" },
-    { at: 1400, kind: "metal", shear: "rising" },
+    { at: 820, kind: "metal", shear: "overhead" },
   ],
 };
 const rush: AttackPattern = {
@@ -50,10 +35,8 @@ const mixed: AttackPattern = {
   windup: 900,
   events: [
     { at: 0, kind: "pellet" },
-    { at: 460, kind: "water" },
-    { at: 650, kind: "metal", shear: "sweep", back: true },
-    { at: 920, kind: "pellet" },
-    { at: 1280, kind: "metal", shear: "rising" },
+    { at: 460, kind: "pellet" },
+    { at: 920, kind: "water" },
   ],
 };
 const charge: AttackPattern = {
@@ -66,7 +49,7 @@ const overhead: AttackPattern = {
   windup: 1350,
   events: [
     { at: 0, kind: "metal", shear: "overhead" },
-    { at: 700, kind: "metal", shear: "sweep", back: true, unblockable: true },
+    { at: 760, kind: "metal", shear: "sweep" },
   ],
 };
 const rising: AttackPattern = {
@@ -74,17 +57,14 @@ const rising: AttackPattern = {
   windup: 1050,
   events: [
     { at: 0, kind: "metal", shear: "rising" },
-    { at: 600, kind: "metal", shear: "sweep", back: true },
+    { at: 680, kind: "metal", shear: "sweep" },
   ],
 };
 const quick: AttackPattern = {
   name: "短枝剪定・即時復帰",
   windup: 800,
   rest: T.boss.quickRest,
-  events: [
-    { at: 0, kind: "metal", shear: "rising" },
-    { at: 620, kind: "metal", shear: "sweep", back: true },
-  ],
+  events: [{ at: 0, kind: "metal", shear: "rising" }],
 };
 const rear: AttackPattern = {
   name: "後方除草・反転掃討：回避",
@@ -106,27 +86,42 @@ export class Boss {
   get pattern() {
     const sequence =
       this.phase === 1
-        ? [irrigation, shears, feed, charge, rising, irrigation, overhead, feed]
-        : [mixed, rush, quake, feed, charge, overhead, mixed, rising, feed];
+        ? [
+            irrigation,
+            shears,
+            shears,
+            charge,
+            rising,
+            irrigation,
+            overhead,
+            shears,
+          ]
+        : [mixed, rush, quake, shears, charge, overhead, mixed, rising, shears];
     const base = this.selected ?? sequence[this.turn % sequence.length];
-    if (this.phase !== 2 || base === rear) return base;
-    const last = base.events[base.events.length - 1];
+    const events = [...base.events];
+    while (events.length < 3) {
+      const last = events[events.length - 1];
+      events.push({
+        at: last.at + 820,
+        kind: "metal",
+        shear: events.length === 1 ? "rising" : "sweep",
+      });
+    }
+    if (this.phase === 2) {
+      const last = events[events.length - 1];
+      events.push(
+        base === charge || base === rush || base === overhead
+          ? { at: last.at + 1100, kind: "quake" }
+          : { at: last.at + 850, kind: "metal", shear: "sweep" },
+      );
+    }
     return {
       ...base,
-      name: base.name + "＋追撃",
-      events: [
-        ...base.events,
-        base === charge || base === rush || base === overhead
-          ? { at: last.at + 1100, kind: "quake" as const }
-          : {
-              at: last.at + 850,
-              kind: "metal" as const,
-              shear: "sweep" as const,
-              back: true,
-            },
-      ],
+      name: base.name + (this.phase === 2 ? "・四連" : "・三連"),
+      events,
     };
   }
+
   move(dt: number, targetX: number) {
     const delta = targetX - this.x;
     const travel = Math.min(
@@ -150,14 +145,15 @@ export class Boss {
     const behind = (targetX - this.x) * this.facing < 0;
     if (behind && distance < T.boss.meleeRange) {
       this.rearOpportunity++;
-      if (this.turn >= this.rearReadyTurn) {
+      if (this.turn >= this.rearReadyTurn && this.rearOpportunity % 2 === 1) {
         this.selected = rear;
         this.rearReadyTurn = this.turn + T.boss.rearCooldownTurns;
         return;
       }
     }
     // Resource slots remain available at every distance; other slots answer positioning.
-    if (this.turn % 3 === 0) this.selected = this.turn % 2 ? irrigation : feed;
+    if (this.turn % 3 === 0)
+      this.selected = this.turn % 2 ? irrigation : shears;
     else if (distance > T.boss.farDistance)
       this.selected = this.turn % 2 ? charge : irrigation;
     else if (distance < T.boss.nearDistance)

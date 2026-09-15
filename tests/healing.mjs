@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { load, windowTarget } from "./loader.mjs";
 const { Practice } = load("practice");
 const { tuning: T } = load("data");
-const { updateEnemy } = load("enemy-system");
+
 function make() {
   const g = new Practice("boss");
   g.begin();
@@ -86,23 +86,6 @@ windowTarget.dispatchEvent(e);
 assert(controls.sample().heal);
 assert(!controls.sample().heal);
 controls.dispose();
-// The resource sequence threatens both sides, with actual contact on the rear.
-for (const phase of [1, 2]) {
-  const b = make();
-  b.boss.phase = phase;
-  b.debug.stopAI = false;
-  const event = b.attackPattern.events.find(
-    (e) => e.back && e.kind === "metal",
-  );
-  assert(event);
-  b.x = b.enemyX + 120;
-  b.face = -1;
-  b.cycle = b.attackPattern.windup + event.at;
-  b.parryAt = b.clock;
-  updateEnemy(b, 0);
-  assert.equal(b.success, 1);
-  assert.equal(b.hp, 1);
-}
 console.log(
-  "PASS: healing duration/charges/cap/input lock/pause/deadline hit interruption for all damage types/reset; rear shear contact during resources.",
+  "PASS: healing duration/charges/cap/input lock/pause/deadline interruption/reset.",
 );

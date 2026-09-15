@@ -101,7 +101,7 @@ for (const phase of [1, 2]) {
   const kinds = g.attackPattern.events.map((e) => e.kind);
   assert.equal(
     kinds.filter((k) => k !== "metal").join(","),
-    "pellet,water,pellet",
+    "pellet,pellet,water",
   );
 }
 const controls = new Controls();
@@ -331,4 +331,37 @@ load("enemy-system").finishEnemyCycle(short);
 assert.equal(short.boss.turn, 2);
 console.log(
   "PASS: distance choice/commitment, rear cooldown/reset and dodge vs parry, phase extensions, short recovery boundary.",
+);
+
+for (const phase of [1, 2]) {
+  for (let turn = 0; turn < 20; turn++) {
+    const b = new Boss();
+    b.phase = phase;
+    b.turn = turn;
+    for (const distance of [120, 280, 500, -120]) {
+      b.next(b.x - distance);
+      const events = b.pattern.events;
+      assert.equal(events.length, phase === 1 ? 3 : 4);
+      assert(!events.some((e) => e.kind === "fertilizer" || e.back));
+      const water = events.findIndex((e) => e.kind === "water");
+      if (water >= 0) assert.equal(water, 2);
+    }
+  }
+}
+const aim = make();
+aim.debug.stopAI = false;
+aim.boss.turn = 1;
+for (const event of aim.attackPattern.events) {
+  aim.cycle = aim.attackPattern.windup + event.at - T.boss.aimLock - 1;
+  aim.x = aim.enemyX + 130;
+  updateEnemy(aim, 0);
+  assert.equal(aim.enemyFacing, 1);
+  aim.cycle++;
+  aim.x = aim.enemyX - 130;
+  updateEnemy(aim, 0);
+  assert.equal(aim.enemyFacing, 1);
+}
+assert.equal(T.special.radius, 18);
+console.log(
+  "PASS: three/four-hit patterns, no boss fertilizer/back attacks, third-shot water, per-hit aim lock, enlarged projectile radius.",
 );

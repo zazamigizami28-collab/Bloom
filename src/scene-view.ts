@@ -226,17 +226,39 @@ export function drawScene(
     }
   }
   for (const p of scene.projectiles) {
+    const scale = T.special.radius / 10;
     g.fillStyle(
       p.kind === "water" ? 0x65d7f5 : p.kind === "pellet" ? 0xe8f6ff : 0xe6b455,
     );
     if (p.kind === "pellet") {
-      g.fillTriangle(p.x - 13, p.y, p.x, p.y - 13, p.x + 13, p.y);
-      g.fillTriangle(p.x - 13, p.y, p.x, p.y + 13, p.x + 13, p.y);
+      g.fillTriangle(
+        p.x - 13 * scale,
+        p.y,
+        p.x,
+        p.y - 13 * scale,
+        p.x + 13 * scale,
+        p.y,
+      );
+      g.fillTriangle(
+        p.x - 13 * scale,
+        p.y,
+        p.x,
+        p.y + 13 * scale,
+        p.x + 13 * scale,
+        p.y,
+      );
     } else if (p.kind === "water") {
       g.fillCircle(p.x, p.y + 3, T.special.radius);
-      g.fillTriangle(p.x - 8, p.y, p.x, p.y - 15, p.x + 8, p.y);
+      g.fillTriangle(
+        p.x - 8 * scale,
+        p.y,
+        p.x,
+        p.y - 15 * scale,
+        p.x + 8 * scale,
+        p.y,
+      );
     } else {
-      g.fillRect(p.x - 9, p.y - 9, 18, 18);
+      g.fillRect(p.x - 9 * scale, p.y - 9 * scale, 18 * scale, 18 * scale);
     }
     g.lineStyle(3, p.kind === "water" ? 0xb8f6ff : 0xffdb92, 0.6);
     g.lineBetween(

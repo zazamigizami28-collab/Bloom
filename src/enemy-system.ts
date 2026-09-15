@@ -15,6 +15,22 @@ export function updateEnemy(game: Practice, dt: number) {
     game.cycle < p.windup * T.boss.moveUntil
   )
     game.boss.move(dt, game.x);
+  if (
+    game.mode === "boss" &&
+    !game.debug.stopAI &&
+    !game.breakMeter.broken &&
+    game.defeatedAt < 0
+  ) {
+    const next = p.events.find(
+      (e) =>
+        game.cycle <
+        p.windup +
+          e.at +
+          (e.kind === "charge" ? T.boss.chargeDuration : T.dummy.active),
+    );
+    if (next && game.cycle < p.windup + next.at - T.boss.aimLock)
+      game.boss.facing = game.x < game.enemyX ? -1 : 1;
+  }
   p.events.forEach((event, i) => {
     if (game.debug.stopAI || game.breakMeter.broken || game.defeatedAt >= 0)
       return;
