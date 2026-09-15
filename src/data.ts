@@ -8,6 +8,7 @@ export const tuning = {
     width: 30,
     height: 59,
   },
+  heal: { duration: 1200, amount: 2, charges: 3 },
   roll: { duration: 420, cooldown: 750, speed: (650 * 2) / 3 },
   parry: {
     window: 180,
@@ -57,9 +58,9 @@ export const tuning = {
     playerStartX: 300,
     nearDistance: 210,
     farDistance: 360,
-    rearCooldownTurns: 3,
+    rearCooldownTurns: 2,
     quickRest: 260,
-    rearRest: 1000,
+    rearRest: 700,
     dangerLead: 650,
     width: 150,
     height: 295,
@@ -76,7 +77,7 @@ export const tuning = {
     hp: 650,
     phaseThreshold: 0.5,
     transition: 1400,
-    rest: 800,
+    rest: 450,
     quakeRange: 430,
     quakeHeight: 28,
   },
@@ -105,6 +106,7 @@ export const tuning = {
 };
 export type AttackEvent = Readonly<{
   at: number;
+  back?: boolean;
   unblockable?: boolean;
   shear?: "sweep" | "overhead" | "rising";
   kind: "metal" | "water" | "fertilizer" | "quake" | "pellet" | "charge";

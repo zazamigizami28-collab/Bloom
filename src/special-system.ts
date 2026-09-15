@@ -54,6 +54,7 @@ export function updateSpecial(game: Practice, dt: number) {
         game.combo = 0;
         if (game.clock - game.hurtAt > T.player.invulnerability) {
           game.hurtAt = game.clock;
+          game.healAt = -1;
           if (!game.debug.invincible) game.hp -= T.dummy.damage;
           game.emit({ type: "sound", kind: "hurt" });
           game.say("水・肥料は、弾が届く瞬間に K / RB");

@@ -21,6 +21,7 @@ export function updateEnemy(game: Practice, dt: number) {
     const hit = p.windup + event.at;
     const time = game.cycle - hit;
     const kind = event.kind;
+    const attackFacing = game.enemyFacing * (event.back ? -1 : 1);
     if (
       kind !== "quake" &&
       !event.unblockable &&
@@ -78,6 +79,7 @@ export function updateEnemy(game: Practice, dt: number) {
           game.clock - game.hurtAt > T.player.invulnerability
         ) {
           game.hurtAt = game.clock;
+          game.healAt = -1;
           if (!game.debug.invincible) game.hp -= T.dummy.damage;
           game.combo = 0;
           game.say("赤い地面攻撃はジャンプで越えよう", 1300);
@@ -96,7 +98,7 @@ export function updateEnemy(game: Practice, dt: number) {
       !game.resolved.has(i) &&
       !game.rolling
     ) {
-      const dx = (game.x - game.enemyX) * game.enemyFacing;
+      const dx = (game.x - game.enemyX) * attackFacing;
       if (
         dx > 0 &&
         dx <
@@ -111,7 +113,7 @@ export function updateEnemy(game: Practice, dt: number) {
         game.resolved.add(i);
         game.attempts++;
         const grade =
-          !event.unblockable && game.face === -game.enemyFacing
+          !event.unblockable && game.face === -attackFacing
             ? parryGrade(game.clock - game.parryAt, T.parry.window)
             : "miss";
         if (grade !== "miss") {
@@ -151,13 +153,14 @@ export function updateEnemy(game: Practice, dt: number) {
           if (game.clock - game.hurtAt > T.player.invulnerability) {
             if (!game.debug.invincible) game.hp -= T.dummy.damage;
             game.hurtAt = game.clock;
+            game.healAt = -1;
             game.emit({ type: "sound", kind: "hurt" });
             game.emit({ type: "shake", duration: 110, intensity: 0.003 });
             const since = game.clock - game.parryAt;
             game.say(
               event.unblockable
                 ? "赤い攻撃はパリィ不可 — ローリングで回避"
-                : game.face !== -game.enemyFacing
+                : game.face !== -attackFacing
                   ? "相手の方を向こう"
                   : since < 600
                     ? "パリィが早い — 光るまで待とう"

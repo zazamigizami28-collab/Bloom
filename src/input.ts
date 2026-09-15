@@ -41,6 +41,7 @@ export class Controls {
     if (pad) {
       if (pad.buttons[0]?.pressed) now.add("jump");
       if (pad.buttons[1]?.pressed) now.add("roll");
+      if (pad.buttons[3]?.pressed) now.add("heal");
       if (pad.buttons[2]?.pressed) now.add("attack");
       if (pad.buttons[5]?.pressed) now.add("parry");
       if (pad.buttons[9]?.pressed) now.add("pause");
@@ -59,6 +60,7 @@ export class Controls {
         ),
       ),
       jump: edge("jump", ["KeyW", "ArrowUp"]),
+      heal: edge("heal", ["KeyE"]),
       roll: edge("roll", ["Space"]),
       attack: edge("attack", ["KeyJ"]),
       parry: edge("parry", ["KeyK"]),

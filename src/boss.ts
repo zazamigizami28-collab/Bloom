@@ -1,11 +1,14 @@
 import { tuning as T, type AttackPattern } from "./data";
 const irrigation: AttackPattern = {
   name: "噴水ノズル・交互射出",
-  windup: 950,
+  windup: 800,
+  rest: 300,
   events: [
     { at: 0, kind: "pellet" },
     { at: 520, kind: "water" },
+    { at: 720, kind: "metal", shear: "sweep", back: true },
     { at: 1040, kind: "pellet" },
+    { at: 1400, kind: "metal", shear: "rising" },
   ],
 };
 const shears: AttackPattern = {
@@ -13,16 +16,19 @@ const shears: AttackPattern = {
   windup: 900,
   events: [
     { at: 0, kind: "metal", shear: "sweep" },
-    { at: 820, kind: "metal", shear: "overhead" },
+    { at: 680, kind: "metal", shear: "overhead", back: true },
   ],
 };
 const feed: AttackPattern = {
   name: "施肥ホッパー・圧縮弾",
-  windup: 1100,
+  windup: 850,
+  rest: 300,
   events: [
     { at: 0, kind: "pellet" },
     { at: 520, kind: "fertilizer" },
+    { at: 720, kind: "metal", shear: "sweep", back: true },
     { at: 1040, kind: "pellet" },
+    { at: 1400, kind: "metal", shear: "rising" },
   ],
 };
 const rush: AttackPattern = {
@@ -45,7 +51,9 @@ const mixed: AttackPattern = {
   events: [
     { at: 0, kind: "pellet" },
     { at: 460, kind: "water" },
+    { at: 650, kind: "metal", shear: "sweep", back: true },
     { at: 920, kind: "pellet" },
+    { at: 1280, kind: "metal", shear: "rising" },
   ],
 };
 const charge: AttackPattern = {
@@ -58,7 +66,7 @@ const overhead: AttackPattern = {
   windup: 1350,
   events: [
     { at: 0, kind: "metal", shear: "overhead" },
-    { at: 760, kind: "metal", shear: "sweep" },
+    { at: 700, kind: "metal", shear: "sweep", back: true, unblockable: true },
   ],
 };
 const rising: AttackPattern = {
@@ -66,14 +74,17 @@ const rising: AttackPattern = {
   windup: 1050,
   events: [
     { at: 0, kind: "metal", shear: "rising" },
-    { at: 680, kind: "metal", shear: "sweep" },
+    { at: 600, kind: "metal", shear: "sweep", back: true },
   ],
 };
 const quick: AttackPattern = {
   name: "短枝剪定・即時復帰",
   windup: 800,
   rest: T.boss.quickRest,
-  events: [{ at: 0, kind: "metal", shear: "rising" }],
+  events: [
+    { at: 0, kind: "metal", shear: "rising" },
+    { at: 620, kind: "metal", shear: "sweep", back: true },
+  ],
 };
 const rear: AttackPattern = {
   name: "後方除草・反転掃討：回避",
@@ -111,6 +122,7 @@ export class Boss {
               at: last.at + 850,
               kind: "metal" as const,
               shear: "sweep" as const,
+              back: true,
             },
       ],
     };
@@ -138,7 +150,7 @@ export class Boss {
     const behind = (targetX - this.x) * this.facing < 0;
     if (behind && distance < T.boss.meleeRange) {
       this.rearOpportunity++;
-      if (this.turn >= this.rearReadyTurn && this.rearOpportunity % 2 === 1) {
+      if (this.turn >= this.rearReadyTurn) {
         this.selected = rear;
         this.rearReadyTurn = this.turn + T.boss.rearCooldownTurns;
         return;

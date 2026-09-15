@@ -13,12 +13,13 @@ export function drawBoss(
   shear?: AttackEvent["shear"],
   time = -9999,
   unblockable = false,
+  back = false,
 ) {
   const danger = unblockable || kind === "quake";
   const attackColor = danger ? 0xff3659 : 0xffe7a6;
   const x = state.enemyX,
     y = T.world.ground,
-    face = state.enemyFacing;
+    face = state.enemyFacing * (back ? -1 : 1);
   const defeated = state.defeatedAt >= 0,
     broken = state.breakMeter.broken;
   const h = T.boss.height;

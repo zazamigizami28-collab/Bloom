@@ -46,10 +46,12 @@ export class Practice extends GameState {
         this.restartCycle();
         break;
       case "heal":
+        this.healAt = -1;
         this.hp = T.player.hp;
         this.deadAt = -1;
         break;
       case "replay":
+        this.healAt = -1;
         if (this.mode === "boss") {
           this.reset(false);
           break;
@@ -100,6 +102,8 @@ export class Practice extends GameState {
   }
   reset(stats: boolean) {
     this.boss.reset();
+    this.healAt = -1;
+    this.healsLeft = T.heal.charges;
     this.rollAt = -9999;
     this.rollReady = 0;
     this.rollFace = 1;
@@ -182,6 +186,7 @@ export class Practice extends GameState {
       this.say("HRT-01・過給運転  /  赤い地面はジャンプ", T.boss.transition);
     }
     if (this.dummyHP === 0) {
+      this.healAt = -1;
       this.defeatedAt = this.clock;
       this.breakMeter.reset();
       this.projectiles = [];
@@ -204,7 +209,7 @@ export class Practice extends GameState {
     if (!this.started || this.paused) return;
     if (this.freeze > 0) {
       this.freeze -= delta;
-      if (input.parry && !this.rolling)
+      if (input.parry && !this.rolling && !this.healing)
         this.buffer = this.clock + T.parry.buffer;
       this.emit({ type: "tick", dt: Math.min(delta, 34) * 0.2 });
       return;
@@ -218,6 +223,7 @@ export class Practice extends GameState {
     }
     if (this.mode === "boss" && this.defeatedAt >= 0) return;
     if (this.mode === "boss" && this.boss.transition > 0) {
+      this.healAt = -1;
       this.boss.tick(dt);
       this.rollAt = -9999;
       this.parryAt = -9999;
@@ -277,6 +283,40 @@ export class Practice extends GameState {
     if (this.breakMeter.tick(dt)) {
       if (this.mode === "boss") this.boss.next(this.x);
       this.restartCycle();
+    }
+    if (
+      input.heal &&
+      !this.healing &&
+      this.playerAction === "idle" &&
+      this.hp < T.player.hp &&
+      this.healsLeft > 0 &&
+      this.y >= T.world.ground
+    ) {
+      this.healAt = this.clock;
+      this.parryAt = -9999;
+      this.buffer = -9999;
+      this.attackAt = -9999;
+      this.say("修復中… 1.2秒", T.heal.duration);
+    }
+    if (this.healing) {
+      // Resolve incoming attacks before completion, including the deadline frame.
+      updateEnemy(this, dt);
+      resolveBossContact(this);
+      updateSpecial(this, dt);
+      if (
+        this.healing &&
+        this.deadAt < 0 &&
+        this.clock - this.healAt >= T.heal.duration
+      ) {
+        this.hp = Math.min(T.player.hp, this.hp + T.heal.amount);
+        this.healsLeft--;
+        this.healAt = -1;
+        this.emit({ type: "sound", kind: "growth" });
+        this.emit({ type: "growth", x: this.x, y: this.y - 60 });
+        this.say("HPを回復！", 900);
+      }
+      finishEnemyCycle(this);
+      return;
     }
     if (
       input.roll &&

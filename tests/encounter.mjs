@@ -99,7 +99,10 @@ for (const phase of [1, 2]) {
   g.boss.phase = phase;
   g.boss.turn = 0;
   const kinds = g.attackPattern.events.map((e) => e.kind);
-  assert.equal(kinds.slice(0, 3).join(","), "pellet,water,pellet");
+  assert.equal(
+    kinds.filter((k) => k !== "metal").join(","),
+    "pellet,water,pellet",
+  );
 }
 const controls = new Controls();
 function key(code) {
@@ -281,7 +284,7 @@ for (const [distance, name] of [
 const back = new Boss();
 back.next(back.x + 120);
 assert(back.pattern.events[0].unblockable);
-for (let i = 0; i < 2; i++) {
+for (let i = 0; i < 1; i++) {
   back.next(back.x + 120);
   assert(!back.pattern.events[0].unblockable, "no consecutive rear punishment");
 }
@@ -317,7 +320,10 @@ for (const distance of [150, 280, 500]) {
 }
 const short = make();
 short.boss.next(short.enemyX - 150);
-short.cycle = short.attackPattern.windup + T.boss.quickRest;
+short.cycle =
+  short.attackPattern.windup +
+  short.attackPattern.events.at(-1).at +
+  T.boss.quickRest;
 load("enemy-system").finishEnemyCycle(short);
 assert.equal(short.boss.turn, 1);
 short.cycle++;

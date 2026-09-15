@@ -8,7 +8,13 @@ import {
 import { BreakMeter } from "./combat";
 import { Flower, type Nutrient } from "./flower";
 export type SessionStatus = "ready" | "running" | "paused" | "dead";
-export type PlayerAction = "idle" | "parry" | "attack" | "finisher" | "roll";
+export type PlayerAction =
+  | "idle"
+  | "parry"
+  | "attack"
+  | "finisher"
+  | "roll"
+  | "heal";
 export type EnemyStatus = "active" | "broken" | "defeated";
 export class GameState {
   mode: "practice" | "boss" = "practice";
@@ -38,6 +44,11 @@ export class GameState {
   }
   get enemyFacing() {
     return this.mode === "boss" ? this.boss.facing : -1;
+  }
+  healAt = -1;
+  healsLeft = T.heal.charges;
+  get healing() {
+    return this.healAt >= 0;
   }
   rollAt = -9999;
   rollReady = 0;
@@ -103,6 +114,7 @@ export class GameState {
           : "running";
   }
   get playerAction(): PlayerAction {
+    if (this.healing) return "heal";
     if (this.rolling) return "roll";
     return this.clock - this.finisherAt < T.finisher.recovery
       ? "finisher"
@@ -123,6 +135,9 @@ export class GameState {
 export function snapshot(state: GameState) {
   return {
     mode: state.mode,
+    healing: state.healing,
+    healAt: state.healAt,
+    healsLeft: state.healsLeft,
     rolling: state.rolling,
     rollAt: state.rollAt,
     rollFace: state.rollFace,

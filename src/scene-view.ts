@@ -46,6 +46,7 @@ export function drawScene(
         scene.resolved.includes(p.events.indexOf(next))
       ) &&
       time < (next?.kind === "charge" ? T.boss.chargeDuration : T.dummy.active);
+  const attackFacing = scene.enemyFacing * (next?.back ? -1 : 1);
   if (scene.mode === "boss")
     drawBoss(
       g,
@@ -56,6 +57,7 @@ export function drawScene(
       next?.shear,
       time,
       next?.unblockable,
+      next?.back,
     );
   else
     dummy(
@@ -113,14 +115,14 @@ export function drawScene(
   ) {
     g.lineStyle(3, 0xfff1a0, 1);
     g.strokeCircle(
-      scene.enemyX + scene.enemyFacing * 73,
+      scene.enemyX + attackFacing * 73,
       T.world.ground - 150,
       (scene.mode === "boss" ? 32 : 12) + Math.sin(scene.clock / 40) * 4,
     );
     g.lineBetween(
-      scene.enemyX + scene.enemyFacing * 96,
+      scene.enemyX + attackFacing * 96,
       T.world.ground - 150,
-      scene.enemyX + scene.enemyFacing * 50,
+      scene.enemyX + attackFacing * 50,
       T.world.ground - 150,
     );
   }
@@ -128,11 +130,11 @@ export function drawScene(
     g.lineStyle(6, 0xffe7a6, 0.8);
     g.beginPath();
     g.arc(
-      scene.enemyX + scene.enemyFacing * 10,
+      scene.enemyX + attackFacing * 10,
       T.world.ground - 68,
       130,
-      scene.enemyFacing < 0 ? Math.PI * 0.86 : -Math.PI * 0.4,
-      scene.enemyFacing < 0 ? Math.PI * 1.4 : Math.PI * 0.14,
+      attackFacing < 0 ? Math.PI * 0.86 : -Math.PI * 0.4,
+      attackFacing < 0 ? Math.PI * 1.4 : Math.PI * 0.14,
     );
     g.strokePath();
   }
@@ -177,6 +179,26 @@ export function drawScene(
         scene.y - 35 - i * 3,
       );
     }
+  }
+  if (scene.healing) {
+    const progress = Math.min(
+      1,
+      (scene.clock - scene.healAt) / T.heal.duration,
+    );
+    g.fillStyle(0x244c3b, 0.9);
+    g.fillRoundedRect(scene.x + scene.face * 17 - 8, scene.y - 60, 16, 24, 4);
+    g.fillStyle(0x9decc1);
+    g.fillRect(scene.x + scene.face * 17 - 5, scene.y - 55, 10, 15);
+    g.lineStyle(4, 0x9decc1);
+    g.beginPath();
+    g.arc(
+      scene.x,
+      scene.y - 36,
+      40,
+      -Math.PI / 2,
+      -Math.PI / 2 + progress * Math.PI * 2,
+    );
+    g.strokePath();
   }
   plant(
     g,
@@ -256,7 +278,7 @@ export function drawScene(
     g.strokeRect(box.x, box.y, box.width, box.height);
     if (active)
       g.strokeRect(
-        scene.enemyFacing < 0
+        attackFacing < 0
           ? scene.enemyX -
               (scene.mode === "boss" ? T.boss.meleeRange : T.dummy.range)
           : scene.enemyX,
@@ -326,7 +348,7 @@ export function drawScene(
       : `ひまわり  ${scene.flower.name}  水${scene.flower.water}/${T.flower.thresholds[3]}\n${T.flower.thresholds[3] - scene.flower.water}回の散水パリィで開花 / 開花中は通常攻撃に花風を追加`,
   );
   view.hud.setText(
-    `花守り  ${"●".repeat(Math.max(0, scene.hp))}${"○".repeat(T.player.hp - Math.max(0, scene.hp))}\n${scene.flower.name}  水${scene.flower.water}/${T.flower.thresholds[3]} 肥料${scene.flower.fertilizer}/3`,
+    `花守り  ${"●".repeat(Math.max(0, scene.hp))}${"○".repeat(T.player.hp - Math.max(0, scene.hp))}\n${scene.flower.name}  水${scene.flower.water}/${T.flower.thresholds[3]} 肥料${scene.flower.fertilizer}/3  回復 E/Y：${scene.healsLeft}/3`,
   );
   view.readout.setText(
     `連続成功  ${String(scene.combo).padStart(2, "0")}   /   BEST ${String(scene.best).padStart(2, "0")}\n成功 ${scene.success} / 接触 ${scene.attempts}`,
