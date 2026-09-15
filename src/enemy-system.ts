@@ -20,7 +20,7 @@ export function updateEnemy(game: Practice, dt: number) {
     const hit = p.windup + event.at;
     const time = game.cycle - hit;
     const kind = event.kind;
-    if (kind === "water" || kind === "fertilizer") {
+    if (kind === "water" || kind === "fertilizer" || kind === "pellet") {
       if (time >= 0 && !game.resolved.has(i)) {
         game.resolved.add(i);
         game.projectiles.push({
@@ -33,17 +33,32 @@ export function updateEnemy(game: Practice, dt: number) {
       }
       return;
     }
+    if (
+      kind === "charge" &&
+      time >= 0 &&
+      time < T.boss.chargeDuration &&
+      !game.resolved.has(i)
+    ) {
+      game.boss.x = Math.max(
+        T.world.left + T.boss.width / 2 + T.player.width,
+        Math.min(
+          T.world.right - T.boss.width / 2 - T.player.width,
+          game.boss.x + (game.enemyFacing * T.boss.chargeSpeed * dt) / 1000,
+        ),
+      );
+    }
     if (kind === "quake") {
       if (time >= -400 && !game.cued.has(i)) {
         game.cued.add(i);
         game.emit({ type: "sound", kind: "quakeCue" });
-        game.say("地面が光る！ Space / A：ジャンプ", 800);
+        game.say("地面が光る！ W / A：ジャンプ", 800);
       }
       if (time >= 0 && time < T.dummy.active && !game.resolved.has(i)) {
         game.resolved.add(i);
         game.emit({ type: "sound", kind: "quake" });
         game.emit({ type: "shake", duration: 160, intensity: 0.006 });
         if (
+          !game.rolling &&
           Math.abs(game.x - game.enemyX) < T.boss.quakeRange &&
           game.y > T.world.ground - T.boss.quakeHeight &&
           game.clock - game.hurtAt > T.player.invulnerability
@@ -64,9 +79,25 @@ export function updateEnemy(game: Practice, dt: number) {
       game.cued.add(i);
       game.emit({ type: "sound", kind: "cue" });
     }
-    if (time >= 0 && time < T.dummy.active && !game.resolved.has(i)) {
+    const duration = kind === "charge" ? T.boss.chargeDuration : T.dummy.active;
+    if (
+      time >= 0 &&
+      time < duration &&
+      !game.resolved.has(i) &&
+      !game.rolling
+    ) {
       const dx = (game.x - game.enemyX) * game.enemyFacing;
-      if (dx > 0 && dx < T.dummy.range && game.y > T.world.ground - 95) {
+      if (
+        dx > 0 &&
+        dx <
+          (kind === "charge"
+            ? (T.boss.width + T.player.width) / 2 + 12
+            : game.mode === "boss"
+              ? T.boss.meleeRange
+              : T.dummy.range) &&
+        game.y >
+          T.world.ground - (game.mode === "boss" ? T.boss.meleeHeight : 95)
+      ) {
         game.resolved.add(i);
         game.attempts++;
         const grade =
@@ -121,7 +152,7 @@ export function updateEnemy(game: Practice, dt: number) {
         }
       }
     }
-    if (time >= T.dummy.active && !game.resolved.has(i)) {
+    if (time >= duration && !game.resolved.has(i)) {
       game.resolved.add(i);
       game.combo = 0;
     }

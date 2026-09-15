@@ -3,7 +3,7 @@ import { tuning as T, patterns, type Pattern } from "./data";
 import { BreakMeter } from "./combat";
 import { Flower, type Nutrient } from "./flower";
 export type SessionStatus = "ready" | "running" | "paused" | "dead";
-export type PlayerAction = "idle" | "parry" | "attack" | "finisher";
+export type PlayerAction = "idle" | "parry" | "attack" | "finisher" | "roll";
 export type EnemyStatus = "active" | "broken" | "defeated";
 export class GameState {
   mode: "practice" | "boss" = "practice";
@@ -33,6 +33,12 @@ export class GameState {
   }
   get enemyFacing() {
     return this.mode === "boss" ? this.boss.facing : -1;
+  }
+  rollAt = -9999;
+  rollReady = 0;
+  rollFace = 1;
+  get rolling() {
+    return this.clock - this.rollAt < T.roll.duration;
   }
   started = false;
   paused = false;
@@ -65,8 +71,12 @@ export class GameState {
   defeatedAt = -1;
   attackFace = 1;
   flower = new Flower();
-  projectiles: { x: number; y: number; kind: Nutrient; direction?: number }[] =
-    [];
+  projectiles: {
+    x: number;
+    y: number;
+    kind: Nutrient | "pellet";
+    direction?: number;
+  }[] = [];
   absorbed: { x: number; y: number; age: number; kind: Nutrient }[] = [];
   finisherAt = -9999;
   finisherDone = true;
@@ -88,6 +98,7 @@ export class GameState {
           : "running";
   }
   get playerAction(): PlayerAction {
+    if (this.rolling) return "roll";
     return this.clock - this.finisherAt < T.finisher.recovery
       ? "finisher"
       : this.clock - this.parryAt <= T.parry.window
@@ -107,6 +118,9 @@ export class GameState {
 export function snapshot(state: GameState) {
   return {
     mode: state.mode,
+    rolling: state.rolling,
+    rollAt: state.rollAt,
+    rollFace: state.rollFace,
     boss: { phase: state.boss.phase, transition: state.boss.transition },
     enemyX: state.enemyX,
     enemyWidth: state.enemyWidth,

@@ -8,6 +8,7 @@ export const tuning = {
     width: 30,
     height: 59,
   },
+  roll: { duration: 420, cooldown: 750, speed: 650 },
   parry: {
     window: 180,
     perfect: 60,
@@ -55,8 +56,12 @@ export const tuning = {
     width: 150,
     height: 295,
     speed: 82,
-    approachDistance: 145,
+    approachDistance: 235,
     moveUntil: 0.55,
+    meleeRange: 300,
+    meleeHeight: 120,
+    chargeSpeed: 560,
+    chargeDuration: 620,
     hp: 650,
     phaseThreshold: 0.5,
     transition: 1400,
@@ -89,7 +94,7 @@ export const tuning = {
 };
 export type AttackEvent = Readonly<{
   at: number;
-  kind: "metal" | "water" | "fertilizer" | "quake";
+  kind: "metal" | "water" | "fertilizer" | "quake" | "pellet" | "charge";
 }>;
 export interface AttackPattern {
   readonly name: string;

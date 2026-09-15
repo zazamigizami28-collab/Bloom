@@ -1,11 +1,15 @@
 import { tuning as T, type AttackPattern } from "./data";
 const irrigation: AttackPattern = {
-  name: "給水パルス",
+  name: "噴水ノズル・交互射出",
   windup: 950,
-  events: [{ at: 0, kind: "water" }],
+  events: [
+    { at: 0, kind: "pellet" },
+    { at: 520, kind: "water" },
+    { at: 1040, kind: "pellet" },
+  ],
 };
 const shears: AttackPattern = {
-  name: "剪定二連",
+  name: "伸縮剪定・横薙ぎ",
   windup: 900,
   events: [
     { at: 0, kind: "metal" },
@@ -13,11 +17,12 @@ const shears: AttackPattern = {
   ],
 };
 const feed: AttackPattern = {
-  name: "施肥・剪定",
+  name: "施肥ホッパー・圧縮弾",
   windup: 1100,
   events: [
-    { at: 0, kind: "fertilizer" },
-    { at: 900, kind: "metal" },
+    { at: 0, kind: "pellet" },
+    { at: 520, kind: "fertilizer" },
+    { at: 1040, kind: "pellet" },
   ],
 };
 const rush: AttackPattern = {
@@ -35,12 +40,18 @@ const quake: AttackPattern = {
   events: [{ at: 0, kind: "quake" }],
 };
 const mixed: AttackPattern = {
-  name: "過給給水・施肥",
+  name: "過給噴水・交互射出",
   windup: 900,
   events: [
-    { at: 0, kind: "water" },
-    { at: 1700, kind: "fertilizer" },
+    { at: 0, kind: "pellet" },
+    { at: 460, kind: "water" },
+    { at: 920, kind: "pellet" },
   ],
+};
+const charge: AttackPattern = {
+  name: "芝刈り駆動・突進",
+  windup: 1150,
+  events: [{ at: 0, kind: "charge" }],
 };
 export class Boss {
   x = T.dummy.x;
@@ -51,8 +62,8 @@ export class Boss {
   get pattern() {
     const sequence =
       this.phase === 1
-        ? [irrigation, shears, feed, shears]
-        : [mixed, rush, quake, feed, rush];
+        ? [irrigation, shears, feed, charge]
+        : [mixed, rush, quake, feed, charge];
     return sequence[this.turn % sequence.length];
   }
   move(dt: number, targetX: number) {
@@ -62,9 +73,9 @@ export class Boss {
       (T.boss.speed * dt) / 1000,
     );
     this.x = Math.max(
-      T.world.left + T.boss.width / 2,
+      T.world.left + T.boss.width / 2 + T.player.width,
       Math.min(
-        T.world.right - T.boss.width / 2,
+        T.world.right - T.boss.width / 2 - T.player.width,
         this.x + Math.sign(delta) * travel,
       ),
     );

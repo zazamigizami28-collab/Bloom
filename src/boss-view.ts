@@ -54,29 +54,106 @@ export function drawBoss(
     g.fillStyle(0x8a6c38);
     g.fillCircle(x + 18 + (i % 3) * 10, y - 196 + Math.floor(i / 3) * 20, 3);
   }
-  const reach = active ? 130 : 82;
-  const armY = y - 65 - (active ? 0 : wind * 55);
-  g.lineStyle(15, 0x556b56);
-  g.lineBetween(x + face * 50, y - 140, x + face * reach, armY);
-  g.fillStyle(0xb9c0a3);
-  g.fillCircle(x + face * 50, y - 140, 13);
-  if (kind === "water" || kind === "fertilizer") {
-    g.fillStyle(kind === "water" ? 0x6ecbdc : 0xdbb563);
-    g.fillRect(x + face * 50 - 12, y - 54, 24, 24);
+  const ready = !broken && !defeated && state.boss.transition === 0;
+  const motion = ready ? wind : 0;
+  const projectile =
+    kind === "water" || kind === "fertilizer" || kind === "pellet";
+  const feeding = state.attackPattern.name.includes("施肥");
+  if (projectile) {
+    // Separate mechanisms: pivoting blue nozzle versus shaking gold hopper.
+    const color = feeding ? 0xe6b455 : 0x65d7f5;
+    const tipX = x + face * 50,
+      tipY = y - 42;
+    g.lineStyle(14, 0x314c50);
+    g.lineBetween(
+      x + (feeding ? 30 : -25),
+      y - (feeding ? 155 : 120),
+      tipX,
+      tipY,
+    );
+    g.lineStyle(8, color);
+    g.lineBetween(
+      x + (feeding ? 30 : -25),
+      y - (feeding ? 155 : 120),
+      tipX,
+      tipY,
+    );
+    g.fillStyle(color);
+    if (feeding) {
+      const shake = Math.sin(state.clock / 35) * motion * 6;
+      g.fillTriangle(
+        x + 5 + shake,
+        y - 150,
+        x + 52 + shake,
+        y - 150,
+        x + 28 + shake,
+        y - 105,
+      );
+      for (let i = 0; i < 4; i++)
+        g.fillCircle(tipX - face * i * 8, tipY - 22 - i * motion * 8, 3);
+    } else {
+      g.lineStyle(4, color, 0.7);
+      for (let i = 0; i < 3; i++)
+        g.strokeCircle(tipX, tipY, 13 + i * 7 + motion * 6);
+    }
+    // Resource shape + colour: blue drops, gold grains, white diamond pellets.
+    g.fillStyle(
+      kind === "water" ? 0x65d7f5 : kind === "fertilizer" ? 0xe6b455 : 0xe8f6ff,
+    );
+    g.fillRect(tipX - 12, tipY - 12, 24, 24);
+    if (active && ready) {
+      g.lineStyle(6, color, 0.8);
+      g.lineBetween(tipX, tipY, tipX + face * 48, tipY);
+    }
+  } else if (kind === "charge") {
+    // Tracks spool up before a committed, straight gardening-machine rush.
+    g.lineStyle(4, 0xffe6a3, ready ? 0.25 + motion * 0.6 : 0);
+    g.lineBetween(x, y - 8, x + face * 260, y - 8);
+    for (let i = 0; i < 4; i++) {
+      const tx = x + face * (95 + i * 44);
+      g.lineBetween(tx - face * 12, y - 20, tx, y - 8);
+      g.lineBetween(tx - face * 12, y + 2, tx, y - 8);
+    }
+    if (active && ready) {
+      g.lineStyle(5, 0xffdda1, 0.65);
+      for (let i = 0; i < 4; i++)
+        g.lineBetween(
+          x - face * 55,
+          y - 20 - i * 25,
+          x - face * (115 + i * 10),
+          y - 20 - i * 25,
+        );
+    }
   } else {
-    g.lineStyle(7, 0xd3dfca);
+    const reach = active ? T.boss.meleeRange - 32 : 95 + motion * 55;
+    const armY = active ? y - 58 : y - 115 - motion * 55;
+    g.lineStyle(16, 0x556b56);
+    g.lineBetween(x + face * 50, y - 140, x + face * reach, armY);
+    g.lineStyle(6, 0xd3dfca);
     g.lineBetween(
       x + face * reach,
       armY,
       x + face * (reach + 32),
-      armY - (active ? 5 : 22),
+      armY - (active ? 8 : 30),
     );
     g.lineBetween(
       x + face * reach,
       armY,
       x + face * (reach + 32),
-      armY + (active ? 5 : 22),
+      armY + (active ? 8 : 30),
     );
+    if (kind === "metal" && ready) {
+      const left = face < 0 ? x - T.boss.meleeRange : x;
+      g.fillStyle(0xffe7a6, active ? 0.28 : motion * 0.08);
+      g.fillRect(
+        left,
+        y - T.boss.meleeHeight,
+        T.boss.meleeRange,
+        T.boss.meleeHeight,
+      );
+      g.lineStyle(active ? 8 : 2, 0xffefb8, active ? 0.9 : motion * 0.5);
+      g.lineBetween(x, y - 58, x + face * T.boss.meleeRange, y - 58);
+    }
   }
   if (state.boss.transition > 0) {
     g.lineStyle(3, 0xffb967, 0.7);

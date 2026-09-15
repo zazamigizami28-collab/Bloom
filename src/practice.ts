@@ -10,7 +10,7 @@ import { attackRect, overlaps, attackActive } from "./combat";
 import { GameState } from "./game-state";
 import type { ActionInput } from "./actions";
 import type { GameEvent } from "./events";
-import { movePlayer } from "./player-system";
+import { movePlayer, resolveBossContact } from "./player-system";
 import { updateEnemy, finishEnemyCycle } from "./enemy-system";
 import { updateSpecial } from "./special-system";
 export class Practice extends GameState {
@@ -99,6 +99,9 @@ export class Practice extends GameState {
   }
   reset(stats: boolean) {
     this.boss.reset();
+    this.rollAt = -9999;
+    this.rollReady = 0;
+    this.rollFace = 1;
     this.hp = T.player.hp;
     this.x = 610;
     this.y = T.world.ground;
@@ -200,7 +203,8 @@ export class Practice extends GameState {
     if (!this.started || this.paused) return;
     if (this.freeze > 0) {
       this.freeze -= delta;
-      if (input.parry) this.buffer = this.clock + T.parry.buffer;
+      if (input.parry && !this.rolling)
+        this.buffer = this.clock + T.parry.buffer;
       this.emit({ type: "tick", dt: Math.min(delta, 34) * 0.2 });
       return;
     }
@@ -214,6 +218,7 @@ export class Practice extends GameState {
     if (this.mode === "boss" && this.defeatedAt >= 0) return;
     if (this.mode === "boss" && this.boss.transition > 0) {
       this.boss.tick(dt);
+      this.rollAt = -9999;
       this.parryAt = -9999;
       this.buffer = -9999;
       this.attackAt = -9999;
@@ -272,6 +277,29 @@ export class Practice extends GameState {
       if (this.mode === "boss") this.boss.next();
       this.restartCycle();
     }
+    if (
+      input.roll &&
+      !this.rolling &&
+      this.clock >= this.rollReady &&
+      this.y >= T.world.ground
+    ) {
+      this.rollAt = this.clock;
+      this.rollReady = this.clock + T.roll.cooldown;
+      this.rollFace = input.move ? Math.sign(input.move) : this.face;
+      this.face = this.rollFace;
+      this.parryAt = -9999;
+      this.buffer = -9999;
+      this.attackAt = -9999;
+      this.emit({ type: "sound", kind: "swing" });
+    }
+    if (this.rolling) {
+      movePlayer(this, {}, dt, false);
+      updateEnemy(this, dt);
+      updateSpecial(this, dt);
+      finishEnemyCycle(this);
+      return;
+    }
+    resolveBossContact(this);
     if (input.parry) this.buffer = this.clock + T.parry.buffer;
     if (this.buffer >= this.clock && this.clock >= this.parryReady) {
       this.parryAt = this.clock;
@@ -333,6 +361,7 @@ export class Practice extends GameState {
       if (wasBroken) this.say(`好機！  ${damage} ダメージ`, 500);
     }
     updateEnemy(this, dt);
+    resolveBossContact(this);
     updateSpecial(this, dt);
     if (this.breakMeter.broken) this.projectiles = [];
     finishEnemyCycle(this);

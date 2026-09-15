@@ -25,7 +25,11 @@ export function drawScene(
   g.clear();
   const p = scene.attackPattern,
     next = p.events.find(
-      (event) => scene.cycle < p.windup + event.at + T.dummy.active,
+      (event) =>
+        scene.cycle <
+        p.windup +
+          event.at +
+          (event.kind === "charge" ? T.boss.chargeDuration : T.dummy.active),
     ),
     time = next === undefined ? -999 : scene.cycle - (p.windup + next.at),
     wind =
@@ -37,7 +41,11 @@ export function drawScene(
       !scene.breakMeter.broken &&
       scene.defeatedAt < 0 &&
       time >= 0 &&
-      time < T.dummy.active;
+      !(
+        next?.kind === "charge" &&
+        scene.resolved.includes(p.events.indexOf(next))
+      ) &&
+      time < (next?.kind === "charge" ? T.boss.chargeDuration : T.dummy.active);
   if (scene.mode === "boss") drawBoss(g, scene, wind, active, next?.kind);
   else
     dummy(
@@ -48,9 +56,28 @@ export function drawScene(
       active,
       scene.recoil,
     );
+  if (scene.rolling) {
+    g.fillStyle(0x916647);
+    g.fillCircle(scene.x, scene.y - 24, 23);
+    const spin = ((scene.clock - scene.rollAt) / 45) * scene.rollFace;
+    g.lineStyle(5, 0xffedab);
+    g.lineBetween(
+      scene.x - Math.cos(spin) * 20,
+      scene.y - 24 - Math.sin(spin) * 20,
+      scene.x + Math.cos(spin) * 20,
+      scene.y - 24 + Math.sin(spin) * 20,
+    );
+    g.lineStyle(3, 0xf5d896, 0.6);
+    g.lineBetween(
+      scene.x - scene.rollFace * 30,
+      scene.y - 8,
+      scene.x - scene.rollFace * 65,
+      scene.y - 8,
+    );
+  }
   if (
-    scene.clock - scene.hurtAt > 160 ||
-    Math.floor(scene.clock / 70) % 2 === 0
+    !scene.rolling &&
+    (scene.clock - scene.hurtAt > 160 || Math.floor(scene.clock / 70) % 2 === 0)
   )
     pot(
       g,
@@ -85,7 +112,7 @@ export function drawScene(
       T.world.ground - 150,
     );
   }
-  if (active && next?.kind === "metal") {
+  if (scene.mode === "practice" && active && next?.kind === "metal") {
     g.lineStyle(6, 0xffe7a6, 0.8);
     g.beginPath();
     g.arc(
@@ -165,8 +192,18 @@ export function drawScene(
     }
   }
   for (const p of scene.projectiles) {
-    g.fillStyle(p.kind === "water" ? 0x65d7f5 : 0xe6b455);
-    g.fillCircle(p.x, p.y, T.special.radius);
+    g.fillStyle(
+      p.kind === "water" ? 0x65d7f5 : p.kind === "pellet" ? 0xe8f6ff : 0xe6b455,
+    );
+    if (p.kind === "pellet") {
+      g.fillTriangle(p.x - 13, p.y, p.x, p.y - 13, p.x + 13, p.y);
+      g.fillTriangle(p.x - 13, p.y, p.x, p.y + 13, p.x + 13, p.y);
+    } else if (p.kind === "water") {
+      g.fillCircle(p.x, p.y + 3, T.special.radius);
+      g.fillTriangle(p.x - 8, p.y, p.x, p.y - 15, p.x + 8, p.y);
+    } else {
+      g.fillRect(p.x - 9, p.y - 9, 18, 18);
+    }
     g.lineStyle(3, p.kind === "water" ? 0xb8f6ff : 0xffdb92, 0.6);
     g.lineBetween(
       p.x - (p.direction ?? -1) * 8,
@@ -207,10 +244,13 @@ export function drawScene(
     g.strokeRect(box.x, box.y, box.width, box.height);
     if (active)
       g.strokeRect(
-        scene.enemyFacing < 0 ? scene.enemyX - T.dummy.range : scene.enemyX,
-        T.world.ground - 95,
-        T.dummy.range,
-        95,
+        scene.enemyFacing < 0
+          ? scene.enemyX -
+              (scene.mode === "boss" ? T.boss.meleeRange : T.dummy.range)
+          : scene.enemyX,
+        T.world.ground - (scene.mode === "boss" ? T.boss.meleeHeight : 95),
+        scene.mode === "boss" ? T.boss.meleeRange : T.dummy.range,
+        scene.mode === "boss" ? T.boss.meleeHeight : 95,
       );
   }
   if (checked("hitboxes") || checked("attackbox")) {
@@ -284,7 +324,7 @@ export function drawScene(
       ? scene.message
       : scene.mode === "boss"
         ? next?.kind === "quake"
-          ? "橙の地面：Space / Aでジャンプ"
+          ? "橙の地面：W / Aでジャンプ"
           : "打撃はK / RB。水と肥料も受け止めよう"
         : scene.x < 570
           ? "練習機に近づこう →"
