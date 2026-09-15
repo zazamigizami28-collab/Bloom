@@ -20,6 +20,10 @@ export function updateEnemy(game: Practice, dt: number) {
     const hit = p.windup + event.at;
     const time = game.cycle - hit;
     const kind = event.kind;
+    if (kind !== "quake" && time >= -T.parry.cueLead && !game.cued.has(i)) {
+      game.cued.add(i);
+      game.emit({ type: "sound", kind: "cue" });
+    }
     if (kind === "water" || kind === "fertilizer" || kind === "pellet") {
       if (time >= 0 && !game.resolved.has(i)) {
         game.resolved.add(i);
@@ -29,7 +33,6 @@ export function updateEnemy(game: Practice, dt: number) {
           kind,
           direction: game.enemyFacing,
         });
-        game.emit({ type: "sound", kind: "cue" });
       }
       return;
     }
@@ -74,10 +77,6 @@ export function updateEnemy(game: Practice, dt: number) {
         }
       }
       return;
-    }
-    if (time >= -80 && !game.cued.has(i)) {
-      game.cued.add(i);
-      game.emit({ type: "sound", kind: "cue" });
     }
     const duration = kind === "charge" ? T.boss.chargeDuration : T.dummy.active;
     if (

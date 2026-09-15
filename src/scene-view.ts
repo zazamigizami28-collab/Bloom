@@ -94,7 +94,8 @@ export function drawScene(
   if (
     next?.kind !== "quake" &&
     scene.boss.transition === 0 &&
-    wind > 0.84 &&
+    time >= -T.parry.cueLead &&
+    time < 0 &&
     !active &&
     !scene.breakMeter.broken &&
     scene.defeatedAt < 0

@@ -130,3 +130,28 @@ assert(
   wall.enemyX - wall.x >= (T.boss.width + T.player.width) / 2,
   "wall leaves space for a solid player",
 );
+for (const turn of [0, 1, 2, 3]) {
+  const cue = make();
+  cue.debug.stopAI = false;
+  cue.boss.turn = turn;
+  cue.cycle = cue.attackPattern.windup - T.parry.cueLead - 2;
+  cue.drainEvents();
+  updateEnemy(cue, 1);
+  assert.equal(
+    cue.events.filter((e) => e.type === "sound" && e.kind === "cue").length,
+    0,
+  );
+  updateEnemy(cue, 1);
+  assert.equal(
+    cue.events.filter((e) => e.type === "sound" && e.kind === "cue").length,
+    1,
+  );
+  updateEnemy(cue, 1);
+  assert.equal(
+    cue.events.filter((e) => e.type === "sound" && e.kind === "cue").length,
+    1,
+  );
+}
+console.log(
+  "PASS: flash/audio lead boundary and single cue for shears, nozzle, hopper and charge.",
+);

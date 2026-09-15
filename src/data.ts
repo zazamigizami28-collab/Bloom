@@ -11,6 +11,7 @@ export const tuning = {
   roll: { duration: 420, cooldown: 750, speed: 650 },
   parry: {
     window: 180,
+    cueLead: 80,
     perfect: 60,
     recovery: 330,
     buffer: 80,
