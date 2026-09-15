@@ -1,4 +1,7 @@
 import Phaser from "phaser";
+import type { AttackEvent } from "./data";
+import { shearPose } from "./shear-pose";
+import { presentation as P } from "./presentation";
 import type { GameSnapshot } from "./game-state";
 import { tuning as T } from "./data";
 export function drawBoss(
@@ -7,6 +10,8 @@ export function drawBoss(
   wind: number,
   active: boolean,
   kind: string | undefined,
+  shear?: AttackEvent["shear"],
+  time = -9999,
 ) {
   const x = state.enemyX,
     y = T.world.ground,
@@ -14,7 +19,10 @@ export function drawBoss(
   const defeated = state.defeatedAt >= 0,
     broken = state.breakMeter.broken;
   const h = T.boss.height;
-  const lift = broken || defeated ? 12 : Math.sin(state.clock / 350) * 2;
+  const lift =
+    broken || defeated
+      ? 12
+      : Math.sin(state.clock / 350) * 2 + state.recoil * 0.22;
   // Low tracks, a water reservoir and fertilizer hopper retain the original
   // procedural machine style. Silhouette height is five player hurtboxes.
   g.fillStyle(0x263d3e);
@@ -125,8 +133,9 @@ export function drawBoss(
         );
     }
   } else {
-    const reach = active ? T.boss.meleeRange - 32 : 95 + motion * 55;
-    const armY = active ? y - 58 : y - 115 - motion * 55;
+    const pose = shearPose(shear, motion, active, state.recoil);
+    const reach = pose.reach;
+    const armY = y - pose.height;
     g.lineStyle(16, 0x556b56);
     g.lineBetween(x + face * 50, y - 140, x + face * reach, armY);
     g.lineStyle(6, 0xd3dfca);
@@ -134,15 +143,69 @@ export function drawBoss(
       x + face * reach,
       armY,
       x + face * (reach + 32),
-      armY - (active ? 8 : 30),
+      armY - pose.opening,
     );
     g.lineBetween(
       x + face * reach,
       armY,
       x + face * (reach + 32),
-      armY + (active ? 8 : 30),
+      armY + pose.opening,
     );
+    if (kind === "metal" && ready && time >= -P.boss.gather && time < 0) {
+      const tipX = x + face * (reach + 32),
+        tipY = armY;
+      const progress = Math.min(
+        1,
+        (time + P.boss.gather) / (P.boss.gather - T.boss.cueLead),
+      );
+      const flash = time >= -T.boss.cueLead;
+      const radius = flash ? P.boss.flashRadius : 72 - progress * 40;
+      g.lineStyle(flash ? 7 : 3, flash ? 0xfffbe3 : 0xffc866, flash ? 1 : 0.65);
+      g.strokeCircle(tipX, tipY, radius);
+      if (flash) {
+        g.fillStyle(0xfff6c7, 0.7);
+        g.fillCircle(tipX, tipY, 18);
+        g.lineStyle(5, 0xfffbe3, 1);
+        g.lineBetween(
+          tipX - P.boss.sparkRadius,
+          tipY,
+          tipX + P.boss.sparkRadius,
+          tipY,
+        );
+        g.lineBetween(
+          tipX,
+          tipY - P.boss.sparkRadius,
+          tipX,
+          tipY + P.boss.sparkRadius,
+        );
+        g.lineStyle(9, 0xfff0b3, 0.8);
+        g.lineBetween(x + face * 50, y - 140, tipX, tipY);
+      }
+    }
+    if (state.recoil > 8 && ready) {
+      g.lineStyle(4, 0xffdf96, Math.min(1, state.recoil / 30));
+      for (let i = 0; i < 3; i++)
+        g.lineBetween(
+          x - face * (75 + i * 9),
+          y - 130 - i * 18,
+          x - face * (95 + i * 9),
+          y - 145 - i * 18,
+        );
+    }
     if (kind === "metal" && ready) {
+      if (active && state.recoil < 8) {
+        g.fillStyle(0xffe7a6, 0.5);
+        const originHeight =
+          shear === "overhead" ? 280 : shear === "rising" ? 20 : 145;
+        g.fillTriangle(
+          x + face * 85,
+          y - originHeight,
+          x + face * T.boss.meleeRange,
+          y - 58,
+          x + face * 170,
+          y - 85,
+        );
+      }
       const left = face < 0 ? x - T.boss.meleeRange : x;
       g.fillStyle(0xffe7a6, active ? 0.28 : motion * 0.08);
       g.fillRect(

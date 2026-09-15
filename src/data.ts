@@ -8,7 +8,7 @@ export const tuning = {
     width: 30,
     height: 59,
   },
-  roll: { duration: 420, cooldown: 750, speed: 650 },
+  roll: { duration: 420, cooldown: 750, speed: (650 * 2) / 3 },
   parry: {
     window: 180,
     cueLead: 80,
@@ -59,6 +59,9 @@ export const tuning = {
     speed: 82,
     approachDistance: 235,
     moveUntil: 0.55,
+    cueLead: 160,
+    parryRecoil: 36,
+    perfectRecoil: 54,
     meleeRange: 300,
     meleeHeight: 120,
     chargeSpeed: 560,
@@ -95,6 +98,7 @@ export const tuning = {
 };
 export type AttackEvent = Readonly<{
   at: number;
+  shear?: "sweep" | "overhead" | "rising";
   kind: "metal" | "water" | "fertilizer" | "quake" | "pellet" | "charge";
 }>;
 export interface AttackPattern {

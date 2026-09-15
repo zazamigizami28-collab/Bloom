@@ -1,5 +1,6 @@
 /** Visual/audio timing is isolated from combat balance. Milliseconds unless noted. */
 export const presentation = {
+  boss: { gather: 420, flashRadius: 42, sparkRadius: 68 },
   parry: { flash: 170, spread: 0.55, minAxisChange: 0.55 },
   bloom: {
     duration: 900,

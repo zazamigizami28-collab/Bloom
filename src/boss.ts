@@ -12,8 +12,8 @@ const shears: AttackPattern = {
   name: "伸縮剪定・横薙ぎ",
   windup: 900,
   events: [
-    { at: 0, kind: "metal" },
-    { at: 520, kind: "metal" },
+    { at: 0, kind: "metal", shear: "sweep" },
+    { at: 820, kind: "metal", shear: "overhead" },
   ],
 };
 const feed: AttackPattern = {
@@ -29,9 +29,9 @@ const rush: AttackPattern = {
   name: "剪定三連",
   windup: 850,
   events: [
-    { at: 0, kind: "metal" },
-    { at: 440, kind: "metal" },
-    { at: 880, kind: "metal" },
+    { at: 0, kind: "metal", shear: "sweep" },
+    { at: 720, kind: "metal", shear: "rising" },
+    { at: 1680, kind: "metal", shear: "overhead" },
   ],
 };
 const quake: AttackPattern = {
@@ -53,6 +53,22 @@ const charge: AttackPattern = {
   windup: 1150,
   events: [{ at: 0, kind: "charge" }],
 };
+const overhead: AttackPattern = {
+  name: "高枝剪定・溜め下ろし",
+  windup: 1350,
+  events: [
+    { at: 0, kind: "metal", shear: "overhead" },
+    { at: 760, kind: "metal", shear: "sweep" },
+  ],
+};
+const rising: AttackPattern = {
+  name: "下枝剪定・切り上げ",
+  windup: 1050,
+  events: [
+    { at: 0, kind: "metal", shear: "rising" },
+    { at: 680, kind: "metal", shear: "sweep" },
+  ],
+};
 export class Boss {
   x = T.dummy.x;
   phase = 1;
@@ -62,8 +78,8 @@ export class Boss {
   get pattern() {
     const sequence =
       this.phase === 1
-        ? [irrigation, shears, feed, charge]
-        : [mixed, rush, quake, feed, charge];
+        ? [irrigation, shears, feed, charge, rising, irrigation, overhead, feed]
+        : [mixed, rush, quake, feed, charge, overhead, mixed, rising, feed];
     return sequence[this.turn % sequence.length];
   }
   move(dt: number, targetX: number) {

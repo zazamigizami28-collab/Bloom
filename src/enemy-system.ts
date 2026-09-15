@@ -20,7 +20,11 @@ export function updateEnemy(game: Practice, dt: number) {
     const hit = p.windup + event.at;
     const time = game.cycle - hit;
     const kind = event.kind;
-    if (kind !== "quake" && time >= -T.parry.cueLead && !game.cued.has(i)) {
+    if (
+      kind !== "quake" &&
+      time >= -(game.mode === "boss" ? T.boss.cueLead : T.parry.cueLead) &&
+      !game.cued.has(i)
+    ) {
       game.cued.add(i);
       game.emit({ type: "sound", kind: "cue" });
     }
@@ -110,7 +114,14 @@ export function updateEnemy(game: Practice, dt: number) {
           game.parryReady = game.clock;
           game.freeze =
             grade === "perfect" ? T.parry.perfectStop : T.parry.stop;
-          game.recoil = grade === "perfect" ? 18 : 10;
+          game.recoil =
+            game.mode === "boss"
+              ? grade === "perfect"
+                ? T.boss.perfectRecoil
+                : T.boss.parryRecoil
+              : grade === "perfect"
+                ? 18
+                : 10;
           game.emit({ type: "sound", kind: grade });
           game.emit({
             type: "impact",

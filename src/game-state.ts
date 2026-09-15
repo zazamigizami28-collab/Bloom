@@ -1,5 +1,10 @@
 import { Boss } from "./boss";
-import { tuning as T, patterns, type Pattern } from "./data";
+import {
+  tuning as T,
+  patterns,
+  type Pattern,
+  type AttackPattern,
+} from "./data";
 import { BreakMeter } from "./combat";
 import { Flower, type Nutrient } from "./flower";
 export type SessionStatus = "ready" | "running" | "paused" | "dead";
@@ -8,7 +13,7 @@ export type EnemyStatus = "active" | "broken" | "defeated";
 export class GameState {
   mode: "practice" | "boss" = "practice";
   boss = new Boss();
-  get attackPattern() {
+  get attackPattern(): AttackPattern {
     return this.mode === "boss" ? this.boss.pattern : patterns[this.pattern];
   }
   get enemyX() {

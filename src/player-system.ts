@@ -11,7 +11,11 @@ export function movePlayer(
   const before = game.x;
   if (game.rolling) {
     game.x = clamp(
-      game.x + (game.rollFace * T.roll.speed * dt) / 1000,
+      game.x +
+        (game.rollFace *
+          T.roll.speed *
+          Math.min(dt, T.roll.duration - (game.clock - game.rollAt))) /
+          1000,
       T.world.left,
       T.world.right,
     );

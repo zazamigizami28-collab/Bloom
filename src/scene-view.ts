@@ -46,7 +46,8 @@ export function drawScene(
         scene.resolved.includes(p.events.indexOf(next))
       ) &&
       time < (next?.kind === "charge" ? T.boss.chargeDuration : T.dummy.active);
-  if (scene.mode === "boss") drawBoss(g, scene, wind, active, next?.kind);
+  if (scene.mode === "boss")
+    drawBoss(g, scene, wind, active, next?.kind, next?.shear, time);
   else
     dummy(
       g,
@@ -93,8 +94,9 @@ export function drawScene(
     );
   if (
     next?.kind !== "quake" &&
+    !(scene.mode === "boss" && next?.kind === "metal") &&
     scene.boss.transition === 0 &&
-    time >= -T.parry.cueLead &&
+    time >= -(scene.mode === "boss" ? T.boss.cueLead : T.parry.cueLead) &&
     time < 0 &&
     !active &&
     !scene.breakMeter.broken &&
@@ -104,7 +106,7 @@ export function drawScene(
     g.strokeCircle(
       scene.enemyX + scene.enemyFacing * 73,
       T.world.ground - 150,
-      12 + Math.sin(scene.clock / 40) * 4,
+      (scene.mode === "boss" ? 32 : 12) + Math.sin(scene.clock / 40) * 4,
     );
     g.lineBetween(
       scene.enemyX + scene.enemyFacing * 96,

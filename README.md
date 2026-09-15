@@ -1,4 +1,4 @@
-# 花 / Bloom-Break — v0.6.2
+# 花 / Bloom-Break — v0.6.3
 
 Webで動作する植木鉢の主人公と園芸機械の2Dアクション。開発・評価版です。
 
@@ -33,7 +33,7 @@ A/D移動、Wジャンプ、Spaceローリング、J攻撃・BREAK中の一撃�
 調整値: src/data.ts。ボスの移動/攻撃順: src/boss.ts。ボス描画: src/boss-view.ts。戦闘進行: src/practice.ts。状態/共通敵座標・矩形: src/game-state.ts。敵攻撃: src/enemy-system.ts。花: src/flower.ts、src/flower-system.ts。入力/UI: src/input.ts、src/ui.ts。詳細はDEVELOPMENT.md、実装規則はAGENTS.md。
 
 ## 状態と残件
-AUDIT-0.6.2.mdを参照。自動検証済み。この版の実画面・音・物理パッドは未検証。ボス戦の難易度・所要時間はユーザー評価待ち。サブ花・複数ボス・拠点・探索は未実装。実装基準v0.5原文との逐条照合は未完了。
+AUDIT-0.6.3.mdを参照。自動検証済み。この版の実画面・音・物理パッドは未検証。ボス戦の難易度・所要時間はユーザー評価待ち。サブ花・複数ボス・拠点・探索は未実装。実装基準v0.5原文との逐条照合は未完了。
 
 ## 保存・復旧
 ChatGPT Workで開発しGitHubを永続保存先にします。Replitは使用しません。変更前原本とバージョン変更を分けて保存し、各版のリモートコミットを確認して完了報告します。復旧時はGitHubを新規取得しnpm ci→npm run check→起動。過去ログはdocs/、監査原本はAUDIT-*.md。認証トークン、node_modules、生成distはソース管理しません。旧Sites配信は.openai/hosting.jsonの既存プロジェクトを継続します。

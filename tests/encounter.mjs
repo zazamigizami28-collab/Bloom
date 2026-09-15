@@ -134,7 +134,7 @@ for (const turn of [0, 1, 2, 3]) {
   const cue = make();
   cue.debug.stopAI = false;
   cue.boss.turn = turn;
-  cue.cycle = cue.attackPattern.windup - T.parry.cueLead - 2;
+  cue.cycle = cue.attackPattern.windup - T.boss.cueLead - 2;
   cue.drainEvents();
   updateEnemy(cue, 1);
   assert.equal(
@@ -154,4 +154,49 @@ for (const turn of [0, 1, 2, 3]) {
 }
 console.log(
   "PASS: flash/audio lead boundary and single cue for shears, nozzle, hopper and charge.",
+);
+
+const { shearPose } = load("shear-pose");
+const poses = ["sweep", "overhead", "rising"].map((kind) =>
+  shearPose(kind, 1, false, 0),
+);
+assert(poses[1].height > poses[0].height && poses[0].height > poses[2].height);
+const recoilPose = shearPose("sweep", 1, true, 54);
+assert(recoilPose.reach < shearPose("sweep", 1, true, 0).reach);
+for (const kind of ["sweep", "overhead", "rising"]) {
+  const g = make();
+  g.debug.stopAI = false;
+  let found = false;
+  for (let turn = 0; turn < 9; turn++) {
+    g.boss.turn = turn;
+    if (g.attackPattern.events[0].shear === kind) {
+      found = true;
+      break;
+    }
+  }
+  assert(found);
+  g.x = g.enemyX - 160;
+  g.face = 1;
+  g.restartCycle();
+  g.cycle = g.attackPattern.windup - T.boss.cueLead;
+  g.parryAt = g.clock;
+  g.clock += T.boss.cueLead;
+  updateEnemy(g, T.boss.cueLead);
+  assert.equal(g.success, 1, "each shear can be parried from its flash");
+  assert.equal(g.recoil, T.boss.parryRecoil);
+}
+for (const step of [10, 16, 34]) {
+  const g = new Practice("practice");
+  g.begin();
+  g.debug.stopAI = true;
+  const x = g.x;
+  g.update({ roll: true }, step);
+  for (let i = 0; i < 50; i++) g.update({}, step);
+  assert(
+    Math.abs(g.x - x - 182) < 0.001,
+    "roll travel is 182 regardless of frame step",
+  );
+}
+console.log(
+  "PASS: three distinct shear poses, cue-to-parry path and recoil, frame-independent shortened roll.",
 );
