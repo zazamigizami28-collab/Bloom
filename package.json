@@ -1,0 +1,23 @@
+{
+  "name": "bloom-parry",
+  "version": "0.6.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc --noEmit && vite build",
+    "test": "node tests/combat.mjs && node tests/lifecycle.mjs && node tests/flower.mjs && node tests/boss.mjs",
+    "format": "prettier --write src tests index.html",
+    "format:check": "prettier --check src tests index.html",
+    "lint": "tsc --noEmit --noUnusedLocals --noUnusedParameters && node tests/architecture.mjs",
+    "check": "npm run lint && npm run format:check && npm test && npm run build"
+  },
+  "dependencies": {
+    "phaser": "3.90.0"
+  },
+  "devDependencies": {
+    "prettier": "3.6.2",
+    "typescript": "~5.9.2",
+    "vite": "^6.1.0"
+  }
+}

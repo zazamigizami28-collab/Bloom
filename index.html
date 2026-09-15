@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>花守り — パリィ稽古</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23eaa076' d='M7 15h18l-3 14H10z'/%3E%3Cpath stroke='%239edb77' stroke-width='4' d='M16 15V4l8 3M16 10L8 5'/%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <main>
+      <header>
+        <div class="brand">
+          <span class="mark">✳</span>
+          <h1>花守り <small>HANAMORI</small></h1>
+        </div>
+        <span class="edition">開発版 0.6.0 <i>／</i> 温室の番人</span
+        ><button id="sound">音：ON</button>
+      </header>
+      <section class="game-shell">
+        <div id="game"></div>
+        <div id="start" class="veil">
+          <div>
+            <p class="eyebrow">忘れられた温室 / 温室の番人・ハルド</p>
+            <h2>その一撃を、<br /><em>咲く力に。</em></h2>
+            <p>
+              打撃と散水を受け止め、頭の花を咲かせよう。<br />橙に光る地面攻撃はジャンプ。
+            </p>
+            <button id="play" class="primary">番人に挑む <span>↵</span></button>
+            <p class="small">キーボード・ゲームパッド対応 / 音あり推奨</p>
+          </div>
+        </div>
+        <div id="pause" class="veil" hidden>
+          <div>
+            <h2>ひとやすみ</h2>
+            <button id="resume" class="primary">稽古に戻る</button>
+          </div>
+        </div>
+        <div id="victory" class="veil" hidden>
+          <div>
+            <p class="eyebrow">温室の番人・ハルド</p>
+            <h2>温室に、<br /><em>穏やかな風が戻った。</em></h2>
+            <p>花を育て、番人を鎮めた。</p>
+            <button id="rematch" class="primary">もう一度挑む</button>
+          </div>
+        </div>
+      </section>
+      <section class="bottom">
+        <div>
+          <span class="eyebrow">操作</span>
+          <p>
+            <kbd>A</kbd><kbd>D</kbd> 移動　<kbd>Space</kbd> ジャンプ　<kbd
+              >J</kbd
+            >
+            攻撃　<kbd>K</kbd> パリィ　<kbd>Esc</kbd>
+            休憩
+          </p>
+          <p class="small">
+            パッド：左スティック / A ジャンプ / X 攻撃 / RB パリィ / Start 休憩
+          </p>
+        </div>
+        <div class="practice">
+          <div>
+            <button id="bossMode">ボス戦をやり直す</button>
+            <button id="practiceMode">練習場へ</button>
+          </div>
+          <label for="pattern">練習場の攻撃（練習場で変更可）</label
+          ><select id="pattern">
+            <option value="garden">育成連携 — 打撃・水・肥料</option>
+            <option value="water">散水 — 水で成長</option>
+            <option value="fertilizer">施肥 — 攻撃力を強化</option>
+            <option value="single">単発 — 基本のタイミング</option>
+            <option value="triple">三連撃 — リズムをつかむ</option>
+            <option value="delay">溜め — 光を見て判断</option>
+          </select>
+        </div>
+      </section>
+      <details id="debug">
+        <summary>開発メニュー <span>F2</span></summary>
+        <div class="debug-grid">
+          <label><input type="checkbox" id="invincible" /> 無敵</label
+          ><label><input type="checkbox" id="stopAI" /> 練習機AI停止</label
+          ><label><input type="checkbox" id="hitboxes" /> 当たり判定</label
+          ><label><input type="checkbox" id="parrybox" /> パリィ判定</label
+          ><label
+            >ゲーム速度
+            <select id="speed">
+              <option value="1">1.0×</option>
+              <option value="0.5">0.5×</option>
+              <option value="0.25">0.25×</option>
+              <option value="1.5">1.5×</option>
+            </select></label
+          ><label
+            >受付時間
+            <input
+              id="window"
+              type="number"
+              min="60"
+              max="350"
+              step="10"
+              value="180"
+            />
+            ms</label
+          ><label
+            ><input type="checkbox" id="attackbox" /> 主人公の攻撃判定</label
+          ><label
+            >成長段階
+            <select id="growth">
+              <option value="0">種</option>
+              <option value="1">芽</option>
+              <option value="2">蕾</option>
+              <option value="3">開花（20秒）</option>
+            </select></label
+          ><button id="fertilize">肥料 +1</button
+          ><button id="breakNow">BREAK即時最大</button
+          ><button id="heal">HP回復</button
+          ><button id="replay">指定攻撃を再生</button
+          ><button id="reset">記録と位置をリセット</button>
+        </div>
+        <p class="small">
+          判定色：黄色＝主人公の攻撃（有効中）、青灰＝予備動作・硬直、赤＝被弾／敵攻撃、緑＝パリィ受付。開花中は攻撃+4。通常攻撃に花風を自動追加（間隔2.4秒）。水で開花時間+2秒、残り最大20秒。
+        </p>
+      </details>
+      <section class="review">
+        <h3>今回の確認ポイント</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>項目</th>
+              <th>試すこと</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>花風</td>
+              <td>開花中のJ / Xに自動で添えられ、攻撃の流れが自然か</td>
+            </tr>
+            <tr>
+              <td>種を残す</td>
+              <td>開花終了時に種が鉢へ落ち、水0から育て直す流れが伝わるか</td>
+            </tr>
+            <tr>
+              <td>番人の予兆</td>
+              <td>打撃・水・肥料が見分けられ、失敗原因が読めるか</td>
+            </tr>
+            <tr>
+              <td>後半</td>
+              <td>HP半分で過給運転へ。橙の地面攻撃をジャンプで避けられるか</td>
+            </tr>
+            <tr>
+              <td>1戦の手応え</td>
+              <td>
+                パリィ→開花→BREAK→決めの一撃がつながるか。長さと難しさは適切か
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <footer>
+        <span>PHASE 06 <b>温室の番人・ハルド</b></span
+        ><span>パリィで崩し、スコップで攻める。</span>
+      </footer>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

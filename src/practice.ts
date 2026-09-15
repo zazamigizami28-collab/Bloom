@@ -1,0 +1,344 @@
+import {
+  announceBloom,
+  updateFlower,
+  castFlower,
+  updateWaves,
+} from "./flower-system";
+import type { PracticeCommand } from "./commands";
+import { tuning as T } from "./data";
+import { attackRect, dummyRect, overlaps, attackActive } from "./combat";
+import { GameState } from "./game-state";
+import type { ActionInput } from "./actions";
+import type { GameEvent } from "./events";
+import { movePlayer } from "./player-system";
+import { updateEnemy, finishEnemyCycle } from "./enemy-system";
+import { updateSpecial } from "./special-system";
+export class Practice extends GameState {
+  constructor(mode: "practice" | "boss" = "practice") {
+    super();
+    this.mode = mode;
+  }
+  debug = { stopAI: false, invincible: false, speed: 1 };
+  events: GameEvent[] = [];
+  emit(event: GameEvent) {
+    this.events.push(event);
+  }
+  drainEvents() {
+    return this.events.splice(0);
+  }
+  command(command: PracticeCommand) {
+    switch (command.type) {
+      case "mode":
+        this.mode = command.value;
+        this.begin();
+        break;
+      case "begin":
+        this.begin();
+        break;
+      case "pause":
+        this.pause(command.value);
+        break;
+      case "pattern":
+        this.pattern = command.value;
+        this.projectiles = [];
+        this.waves = [];
+        this.restartCycle();
+        break;
+      case "heal":
+        this.hp = T.player.hp;
+        this.deadAt = -1;
+        break;
+      case "replay":
+        if (this.mode === "boss") {
+          this.reset(false);
+          break;
+        }
+        this.projectiles = [];
+        this.waves = [];
+        this.finisherAt = -9999;
+        this.finisherDone = true;
+        this.attackAt = -9999;
+        this.breakMeter.reset();
+        this.defeatedAt = -1;
+        this.dummyHP = this.enemyHPMax;
+        this.freeze = 0;
+        this.restartCycle();
+        break;
+      case "break":
+        if (this.started && this.deadAt < 0 && this.defeatedAt < 0)
+          this.addBreak(T.break.max);
+        break;
+      case "growth":
+        this.flower.setStage(command.value);
+        if (command.value === 3) announceBloom(this);
+        break;
+      case "fertilize":
+        this.flower.absorb("fertilizer");
+        break;
+      case "reset":
+        this.reset(true);
+        break;
+      case "debug":
+        this.debug = { ...this.debug, ...command.value };
+        break;
+    }
+  }
+  begin() {
+    this.paused = false;
+    this.started = true;
+    this.reset(false);
+  }
+  pause(v: boolean) {
+    this.paused = v;
+  }
+  restartCycle() {
+    if (this.mode === "boss") this.boss.facing = this.x < T.dummy.x ? -1 : 1;
+    this.cycle = -500;
+    this.resolved.clear();
+    this.cued.clear();
+  }
+  reset(stats: boolean) {
+    this.boss.reset();
+    this.hp = T.player.hp;
+    this.x = 610;
+    this.y = T.world.ground;
+    this.vy = 0;
+    this.face = 1;
+    this.attackFace = 1;
+    this.attackHit = false;
+    this.recoil = 0;
+    this.deadAt = -1;
+    this.parryAt = -9999;
+    this.attackAt = -9999;
+    this.hurtAt = -9999;
+    this.parryReady = 0;
+    this.buffer = -9999;
+    this.combo = 0;
+    this.dummyHP = this.enemyHPMax;
+    this.breakMeter.reset();
+    this.defeatedAt = -1;
+    this.freeze = 0;
+    this.events = [];
+    this.emit({ type: "clear" });
+    this.flower.reset();
+    this.projectiles = [];
+    this.absorbed = [];
+    this.waves = [];
+    this.finisherAt = -9999;
+    this.finisherDone = true;
+    this.restartCycle();
+    if (stats) {
+      this.best = 0;
+      this.success = 0;
+      this.attempts = 0;
+    }
+    this.message = "光る瞬間を、受け止めよう";
+    this.messageUntil = this.clock + 1800;
+  }
+  addBreak(amount: number) {
+    if (
+      this.defeatedAt >= 0 ||
+      (this.mode === "boss" && this.boss.transition > 0)
+    )
+      return;
+    if (this.breakMeter.add(amount)) {
+      this.projectiles = [];
+      this.freeze = T.break.stop;
+      this.recoil = 22;
+      this.resolved = new Set(this.attackPattern.events.map((_, i) => i));
+      this.emit({ type: "sound", kind: "break" });
+      this.emit({
+        type: "impact",
+        x: T.dummy.x - 25,
+        y: T.world.ground - 65,
+        kind: "break",
+      });
+      this.emit({
+        type: "shake",
+        duration: 180,
+        intensity: T.feedback.shake * 1.3,
+      });
+      this.say("BREAK  /  近づいて J：決めの一撃", 1600);
+    }
+  }
+  hitDummy(damage: number) {
+    if (
+      this.defeatedAt >= 0 ||
+      (this.mode === "boss" && this.boss.transition > 0)
+    )
+      return;
+    this.dummyHP = Math.max(0, this.dummyHP - damage);
+    if (this.mode === "boss" && this.boss.observe(this.dummyHP)) {
+      this.projectiles = [];
+      this.waves = [];
+      this.breakMeter.reset();
+      this.restartCycle();
+      this.emit({ type: "sound", kind: "phase" });
+      this.emit({ type: "bloom", x: T.dummy.x, y: T.world.ground - 90 });
+      this.say(
+        "温室の番人・過給運転  /  橙の地面はジャンプ",
+        T.boss.transition,
+      );
+    }
+    if (this.dummyHP === 0) {
+      this.defeatedAt = this.clock;
+      this.breakMeter.reset();
+      this.projectiles = [];
+      this.restartCycle();
+      if (this.mode === "boss") {
+        this.waves = [];
+        this.emit({ type: "sound", kind: "victory" });
+        this.emit({ type: "bloom", x: T.dummy.x, y: T.world.ground - 110 });
+        this.say("温室に、穏やかな風が戻った。", 999999);
+      } else this.say("稽古達成！ 練習機を再起動中", T.dummy.resetDelay);
+    }
+  }
+  say(text: string, duration = 1100) {
+    this.message = text;
+    this.messageUntil = this.clock + duration;
+  }
+  update(input: ActionInput, delta: number) {
+    if (input.start && !this.started) this.begin();
+    if (input.pause && this.started) this.pause(!this.paused);
+    if (!this.started || this.paused) return;
+    if (this.freeze > 0) {
+      this.freeze -= delta;
+      if (input.parry) this.buffer = this.clock + T.parry.buffer;
+      this.emit({ type: "tick", dt: Math.min(delta, 34) * 0.2 });
+      return;
+    }
+    const dt = Math.min(delta, 34) * this.debug.speed;
+    this.clock += dt;
+    this.emit({ type: "tick", dt: dt });
+    if (this.deadAt >= 0) {
+      if (this.clock - this.deadAt > T.retry) this.reset(false);
+      return;
+    }
+    if (this.mode === "boss" && this.defeatedAt >= 0) return;
+    if (this.mode === "boss" && this.boss.transition > 0) {
+      this.boss.tick(dt);
+      this.parryAt = -9999;
+      this.buffer = -9999;
+      this.attackAt = -9999;
+      this.finisherAt = -9999;
+      this.finisherDone = true;
+      if (this.boss.transition === 0) this.restartCycle();
+      return;
+    }
+    updateFlower(this, dt);
+    updateWaves(this, dt);
+    if (
+      this.mode === "boss" &&
+      (this.defeatedAt >= 0 || this.boss.transition > 0)
+    )
+      return;
+    if (
+      this.mode === "practice" &&
+      this.defeatedAt >= 0 &&
+      this.clock - this.defeatedAt >= T.dummy.resetDelay
+    ) {
+      this.defeatedAt = -1;
+      this.dummyHP = this.enemyHPMax;
+      this.breakMeter.reset();
+      this.restartCycle();
+    }
+    if (this.clock - this.finisherAt < T.finisher.recovery) {
+      if (
+        !this.finisherDone &&
+        this.clock - this.finisherAt >= T.finisher.startup
+      ) {
+        this.finisherDone = true;
+        this.hitDummy(this.flower.damage(T.finisher.damage));
+        this.breakMeter.reset();
+        if (
+          this.mode === "boss" &&
+          this.defeatedAt < 0 &&
+          this.boss.transition === 0
+        )
+          this.boss.next();
+        this.restartCycle();
+        this.freeze = T.finisher.stop;
+        this.recoil = 28;
+        this.emit({
+          type: "impact",
+          x: T.dummy.x - 12,
+          y: T.world.ground - 65,
+          kind: "finisher",
+        });
+        this.emit({ type: "sound", kind: "finisher" });
+        this.emit({ type: "shake", duration: 180, intensity: 0.008 });
+        if (this.dummyHP > 0) this.say("決めの一撃！", 1000);
+      }
+      return;
+    }
+    if (this.breakMeter.tick(dt)) {
+      if (this.mode === "boss") this.boss.next();
+      this.restartCycle();
+    }
+    if (input.parry) this.buffer = this.clock + T.parry.buffer;
+    if (this.buffer >= this.clock && this.clock >= this.parryReady) {
+      this.parryAt = this.clock;
+      this.parryReady = this.clock + Math.max(T.parry.recovery, T.parry.window);
+      this.buffer = -9999;
+      this.attackAt = -9999;
+    }
+    if (
+      input.attack &&
+      this.breakMeter.broken &&
+      this.defeatedAt < 0 &&
+      overlaps(attackRect(this.x, this.y, this.face), dummyRect())
+    ) {
+      this.finisherAt = this.clock;
+      this.finisherDone = false;
+      this.emit({ type: "sound", kind: "charge" });
+      this.attackAt = -9999;
+      this.parryAt = -9999;
+      this.projectiles = [];
+      this.say("決めの一撃", 800);
+      return;
+    }
+    const guarding = this.clock - this.parryAt <= T.parry.window;
+    const attacking = this.clock - this.attackAt < T.weapon.recovery;
+    if (
+      input.attack &&
+      !guarding &&
+      !attacking &&
+      this.clock >= this.parryReady
+    ) {
+      this.attackAt = this.clock;
+      this.attackFace = this.face;
+      this.attackHit = false;
+      this.emit({ type: "sound", kind: "swing" });
+      castFlower(this);
+    }
+    movePlayer(this, input, dt, guarding);
+    const age = this.clock - this.attackAt;
+    if (
+      this.defeatedAt < 0 &&
+      !this.attackHit &&
+      attackActive(age) &&
+      overlaps(attackRect(this.x, this.y, this.attackFace), dummyRect())
+    ) {
+      this.attackHit = true;
+      const damage = this.flower.damage(T.weapon.damage);
+      this.hitDummy(damage);
+      this.emit({ type: "sound", kind: "hit" });
+      this.freeze = T.weapon.stop;
+      this.recoil = 8;
+      this.emit({
+        type: "impact",
+        x: T.dummy.x - 20,
+        y: this.y - 45,
+        kind: "hit",
+      });
+      const wasBroken = this.breakMeter.broken;
+      this.addBreak(T.break.attack);
+      if (wasBroken) this.say(`好機！  ${damage} ダメージ`, 500);
+    }
+    updateEnemy(this, dt);
+    updateSpecial(this, dt);
+    if (this.breakMeter.broken) this.projectiles = [];
+    finishEnemyCycle(this);
+    this.recoil *= Math.pow(0.85, dt / 16);
+  }
+}

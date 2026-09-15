@@ -1,0 +1,282 @@
+:root {
+  font-family: Inter, "Noto Sans JP", system-ui, sans-serif;
+  color: #e8f0df;
+  background: #111e20;
+  font-synthesis: none;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+main {
+  max-width: 1240px;
+  margin: auto;
+  padding: 22px 32px;
+}
+header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  height: 64px;
+  margin-bottom: 18px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.mark {
+  font-size: 42px;
+  color: #c6e99a;
+}
+h1 {
+  font-size: 25px;
+  letter-spacing: 4px;
+  margin: 0;
+}
+h1 small {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 5px;
+  color: #a8b8ae;
+  margin-top: 3px;
+}
+.edition {
+  margin-left: auto;
+  color: #a8b8ae;
+  font-size: 13px;
+}
+.edition i {
+  padding: 0 12px;
+  color: #5b736e;
+}
+button,
+select,
+input {
+  font: inherit;
+}
+button,
+select {
+  background: #203438;
+  border: 1px solid #4a6563;
+  color: #e8f0df;
+  border-radius: 5px;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+button:hover {
+  background: #36514f;
+}
+button:focus-visible,
+select:focus-visible {
+  outline: 2px solid #d1f3a6;
+  outline-offset: 3px;
+}
+.game-shell {
+  position: relative;
+  border: 1px solid #57756c;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 22px 60px #0005;
+  aspect-ratio: 16/9;
+}
+#game {
+  width: 100%;
+  height: 100%;
+}
+canvas {
+  display: block;
+  image-rendering: pixelated;
+}
+.veil {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  padding: 7%;
+  background: linear-gradient(90deg, #102b2eea, #15303388 55%, #15303322);
+}
+[hidden] {
+  display: none !important;
+}
+.eyebrow {
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: #b7d29e;
+}
+h2 {
+  font-size: clamp(25px, 4.3vw, 58px);
+  line-height: 1.35;
+  letter-spacing: 4px;
+  margin: 16px 0;
+}
+em {
+  color: #c9ec9c;
+  font-style: normal;
+}
+.veil p {
+  color: #c4d7cd;
+  font-size: 14px;
+}
+.primary {
+  margin-top: 20px;
+  background: #cbe99f;
+  color: #203531;
+  border: 0;
+  padding: 16px 24px;
+  font-weight: 700;
+}
+.primary:hover {
+  background: #dafaaf;
+}
+.primary span {
+  margin-left: 55px;
+}
+.small {
+  font-size: 12px !important;
+  color: #95aba6 !important;
+  line-height: 1.6;
+}
+.bottom {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 25px 0 18px;
+}
+.bottom p {
+  font-size: 13px;
+  margin: 10px 0;
+}
+kbd {
+  display: inline-block;
+  min-width: 23px;
+  text-align: center;
+  background: #283e3e;
+  border: 1px solid #54716a;
+  border-bottom-width: 3px;
+  border-radius: 4px;
+  padding: 2px 5px;
+  font-size: 12px;
+  margin-right: 3px;
+}
+.practice {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+.practice label {
+  font-size: 12px;
+  color: #a9beb3;
+}
+.practice select {
+  font-size: 13px;
+}
+details {
+  border-top: 1px solid #34504c;
+  padding: 15px 0;
+}
+summary {
+  cursor: pointer;
+  font-size: 13px;
+  color: #a8bbb0;
+}
+summary span {
+  font-size: 11px;
+  margin-left: 8px;
+}
+.debug-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  padding: 20px 0;
+}
+.debug-grid label {
+  font-size: 13px;
+}
+.debug-grid input[type="number"] {
+  width: 66px;
+  background: #233b39;
+  color: white;
+  border: 1px solid #527067;
+  padding: 6px;
+}
+.debug-grid button {
+  font-size: 12px;
+}
+footer {
+  border-top: 1px solid #34504c;
+  padding-top: 16px;
+  display: flex;
+  justify-content: space-between;
+  color: #819c92;
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+footer b {
+  font-weight: 400;
+  color: #bbcdbe;
+  margin-left: 12px;
+}
+@media (max-width: 800px) {
+  main {
+    padding: 10px;
+  }
+  .edition {
+    font-size: 11px;
+  }
+  .bottom {
+    flex-direction: column;
+  }
+  .veil .small {
+    display: none;
+  }
+  h2 {
+    margin: 8px 0;
+  }
+  .primary {
+    margin-top: 6px;
+  }
+  footer {
+    gap: 15px;
+  }
+  .bottom p {
+    line-height: 2;
+  }
+  header {
+    gap: 10px;
+  }
+  h1 {
+    font-size: 20px;
+  }
+}
+.review {
+  padding: 4px 0 24px;
+}
+.review h3 {
+  font-size: 15px;
+  font-weight: 500;
+  color: #d4e6c4;
+}
+.review table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 14px;
+  line-height: 1.65;
+}
+.review th {
+  text-align: left;
+  color: #b7d29e;
+  font-weight: 500;
+}
+.review td,
+.review th {
+  padding: 9px 12px;
+  border-bottom: 1px solid #304941;
+}
+.review td:first-child {
+  width: 115px;
+  color: #e7d39b;
+}
