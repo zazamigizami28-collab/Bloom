@@ -179,7 +179,7 @@ export class Practice extends GameState {
       this.restartCycle();
       this.emit({ type: "sound", kind: "phase" });
       this.emit({ type: "bloom", x: this.enemyX, y: T.world.ground - 90 });
-      this.say("HRT-01・過給運転  /  橙の地面はジャンプ", T.boss.transition);
+      this.say("HRT-01・過給運転  /  赤い地面はジャンプ", T.boss.transition);
     }
     if (this.dummyHP === 0) {
       this.defeatedAt = this.clock;
@@ -258,7 +258,7 @@ export class Practice extends GameState {
           this.defeatedAt < 0 &&
           this.boss.transition === 0
         )
-          this.boss.next();
+          this.boss.next(this.x);
         this.restartCycle();
         this.freeze = T.finisher.stop;
         this.recoil = 28;
@@ -275,7 +275,7 @@ export class Practice extends GameState {
       return;
     }
     if (this.breakMeter.tick(dt)) {
-      if (this.mode === "boss") this.boss.next();
+      if (this.mode === "boss") this.boss.next(this.x);
       this.restartCycle();
     }
     if (

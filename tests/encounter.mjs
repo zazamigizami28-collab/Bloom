@@ -99,7 +99,7 @@ for (const phase of [1, 2]) {
   g.boss.phase = phase;
   g.boss.turn = 0;
   const kinds = g.attackPattern.events.map((e) => e.kind);
-  assert.equal(kinds.join(","), "pellet,water,pellet");
+  assert.equal(kinds.slice(0, 3).join(","), "pellet,water,pellet");
 }
 const controls = new Controls();
 function key(code) {
@@ -263,4 +263,66 @@ start.command({ type: "mode", value: "boss" });
 checkStart();
 console.log(
   "PASS: all ranged parries preserve BREAK and growth rewards; 19/25 melee accumulation and 6/4 thresholds; safe boss starts across lifecycle.",
+);
+
+const { Boss } = load("boss");
+for (const [distance, name] of [
+  [150, "短枝"],
+  [280, "横薙ぎ"],
+  [500, "突進"],
+]) {
+  const b = new Boss();
+  b.next(b.x - distance);
+  assert(b.pattern.name.includes(name));
+  const chosen = b.pattern.name;
+  b.move(20, b.x + 100);
+  assert.equal(b.pattern.name, chosen, "selection stays committed");
+}
+const back = new Boss();
+back.next(back.x + 120);
+assert(back.pattern.events[0].unblockable);
+for (let i = 0; i < 2; i++) {
+  back.next(back.x + 120);
+  assert(!back.pattern.events[0].unblockable, "no consecutive rear punishment");
+}
+back.reset();
+assert.equal(back.rearOpportunity, 0);
+assert.equal(back.selected, undefined);
+for (const rolling of [false, true]) {
+  const g = make();
+  g.debug.stopAI = false;
+  g.boss.next(g.enemyX + 120);
+  g.x = g.enemyX + 120;
+  g.face = -1;
+  g.restartCycle();
+  const face = g.enemyFacing;
+  g.cycle = 0;
+  updateEnemy(g, 20);
+  assert.equal(g.enemyFacing, face);
+  g.cycle = g.attackPattern.windup;
+  g.parryAt = g.clock;
+  if (rolling) g.rollAt = g.clock;
+  updateEnemy(g, 0);
+  assert.equal(g.success, 0);
+  assert.equal(g.hp, rolling ? 5 : 4);
+}
+const extension = new Boss();
+for (const distance of [150, 280, 500]) {
+  extension.reset();
+  extension.next(extension.x - distance);
+  const base = extension.pattern.events;
+  extension.phase = 2;
+  assert.equal(extension.pattern.events.length, base.length + 1);
+  assert.deepEqual(extension.pattern.events.slice(0, -1), base);
+}
+const short = make();
+short.boss.next(short.enemyX - 150);
+short.cycle = short.attackPattern.windup + T.boss.quickRest;
+load("enemy-system").finishEnemyCycle(short);
+assert.equal(short.boss.turn, 1);
+short.cycle++;
+load("enemy-system").finishEnemyCycle(short);
+assert.equal(short.boss.turn, 2);
+console.log(
+  "PASS: distance choice/commitment, rear cooldown/reset and dodge vs parry, phase extensions, short recovery boundary.",
 );

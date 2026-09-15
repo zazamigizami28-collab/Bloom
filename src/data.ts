@@ -55,6 +55,12 @@ export const tuning = {
   flower: { thresholds: [0, 1, 2, 3], fertilizerMax: 3, fertilizerDamage: 2 },
   boss: {
     playerStartX: 300,
+    nearDistance: 210,
+    farDistance: 360,
+    rearCooldownTurns: 3,
+    quickRest: 260,
+    rearRest: 1000,
+    dangerLead: 650,
     width: 150,
     height: 295,
     speed: 82,
@@ -99,10 +105,13 @@ export const tuning = {
 };
 export type AttackEvent = Readonly<{
   at: number;
+  unblockable?: boolean;
   shear?: "sweep" | "overhead" | "rising";
   kind: "metal" | "water" | "fertilizer" | "quake" | "pellet" | "charge";
 }>;
 export interface AttackPattern {
+  readonly rest?: number;
+  readonly stationary?: boolean;
   readonly name: string;
   readonly windup: number;
   readonly events: readonly AttackEvent[];

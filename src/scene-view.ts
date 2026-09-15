@@ -47,7 +47,16 @@ export function drawScene(
       ) &&
       time < (next?.kind === "charge" ? T.boss.chargeDuration : T.dummy.active);
   if (scene.mode === "boss")
-    drawBoss(g, scene, wind, active, next?.kind, next?.shear, time);
+    drawBoss(
+      g,
+      scene,
+      wind,
+      active,
+      next?.kind,
+      next?.shear,
+      time,
+      next?.unblockable,
+    );
   else
     dummy(
       g,
@@ -326,9 +335,11 @@ export function drawScene(
     scene.clock < scene.messageUntil
       ? scene.message
       : scene.mode === "boss"
-        ? next?.kind === "quake"
-          ? "橙の地面：W / Aでジャンプ"
-          : "打撃はK / RB。水と肥料も受け止めよう"
+        ? next?.unblockable
+          ? "赤い剪定：Space / Bでローリング"
+          : next?.kind === "quake"
+            ? "赤い地面：W / Aでジャンプ"
+            : "打撃はK / RB。水と肥料も受け止めよう"
         : scene.x < 570
           ? "練習機に近づこう →"
           : scene.x > scene.enemyX

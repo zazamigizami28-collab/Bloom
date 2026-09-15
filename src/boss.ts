@@ -69,7 +69,24 @@ const rising: AttackPattern = {
     { at: 680, kind: "metal", shear: "sweep" },
   ],
 };
+const quick: AttackPattern = {
+  name: "短枝剪定・即時復帰",
+  windup: 800,
+  rest: T.boss.quickRest,
+  events: [{ at: 0, kind: "metal", shear: "rising" }],
+};
+const rear: AttackPattern = {
+  name: "後方除草・反転掃討：回避",
+  windup: 1050,
+  stationary: true,
+  rest: T.boss.rearRest,
+  events: [{ at: 0, kind: "metal", shear: "sweep", unblockable: true }],
+};
 export class Boss {
+  selected: AttackPattern | undefined;
+  rearReadyTurn = 0;
+  rearOpportunity = 0;
+
   x = T.dummy.x;
   phase = 1;
   turn = 0;
@@ -80,7 +97,23 @@ export class Boss {
       this.phase === 1
         ? [irrigation, shears, feed, charge, rising, irrigation, overhead, feed]
         : [mixed, rush, quake, feed, charge, overhead, mixed, rising, feed];
-    return sequence[this.turn % sequence.length];
+    const base = this.selected ?? sequence[this.turn % sequence.length];
+    if (this.phase !== 2 || base === rear) return base;
+    const last = base.events[base.events.length - 1];
+    return {
+      ...base,
+      name: base.name + "＋追撃",
+      events: [
+        ...base.events,
+        base === charge || base === rush || base === overhead
+          ? { at: last.at + 1100, kind: "quake" as const }
+          : {
+              at: last.at + 850,
+              kind: "metal" as const,
+              shear: "sweep" as const,
+            },
+      ],
+    };
   }
   move(dt: number, targetX: number) {
     const delta = targetX - this.x;
@@ -97,11 +130,31 @@ export class Boss {
     );
     this.facing = targetX < this.x ? -1 : 1;
   }
-  next() {
+  next(targetX?: number) {
     this.turn++;
+    this.selected = undefined;
+    if (targetX === undefined) return;
+    const distance = Math.abs(targetX - this.x);
+    const behind = (targetX - this.x) * this.facing < 0;
+    if (behind && distance < T.boss.meleeRange) {
+      this.rearOpportunity++;
+      if (this.turn >= this.rearReadyTurn && this.rearOpportunity % 2 === 1) {
+        this.selected = rear;
+        this.rearReadyTurn = this.turn + T.boss.rearCooldownTurns;
+        return;
+      }
+    }
+    // Resource slots remain available at every distance; other slots answer positioning.
+    if (this.turn % 3 === 0) this.selected = this.turn % 2 ? irrigation : feed;
+    else if (distance > T.boss.farDistance)
+      this.selected = this.turn % 2 ? charge : irrigation;
+    else if (distance < T.boss.nearDistance)
+      this.selected = this.turn % 2 ? quick : rising;
+    else this.selected = this.turn % 2 ? shears : overhead;
   }
   observe(hp: number) {
     if (hp > 0 && hp <= T.boss.hp * T.boss.phaseThreshold && this.phase === 1) {
+      this.selected = undefined;
       this.phase = 2;
       this.turn = 0;
       this.transition = T.boss.transition;
@@ -113,6 +166,9 @@ export class Boss {
     this.transition = Math.max(0, this.transition - dt);
   }
   reset() {
+    this.selected = undefined;
+    this.rearReadyTurn = 0;
+    this.rearOpportunity = 0;
     this.x = T.dummy.x;
     this.phase = 1;
     this.turn = 0;

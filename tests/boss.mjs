@@ -16,7 +16,7 @@ assert.equal(a.dummyHP, 650);
 assert.equal(a.attackPattern.name, "噴水ノズル・交互射出");
 a.cycle = 10000;
 finishEnemyCycle(a);
-assert.equal(a.attackPattern.name, "伸縮剪定・横薙ぎ");
+assert.equal(a.attackPattern.name, "芝刈り駆動・突進");
 a.projectiles = [{ x: 1, y: 2, kind: "water" }];
 a.waves = [{ x: 1, y: 2, face: 1, distance: 0, damage: 10 }];
 a.hitDummy(325);

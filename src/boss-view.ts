@@ -12,7 +12,10 @@ export function drawBoss(
   kind: string | undefined,
   shear?: AttackEvent["shear"],
   time = -9999,
+  unblockable = false,
 ) {
+  const danger = unblockable || kind === "quake";
+  const attackColor = danger ? 0xff3659 : 0xffe7a6;
   const x = state.enemyX,
     y = T.world.ground,
     face = state.enemyFacing;
@@ -151,7 +154,12 @@ export function drawBoss(
       x + face * (reach + 32),
       armY + pose.opening,
     );
-    if (kind === "metal" && ready && time >= -P.boss.gather && time < 0) {
+    if (
+      kind === "metal" &&
+      ready &&
+      time >= -(unblockable ? T.boss.dangerLead : P.boss.gather) &&
+      time < 0
+    ) {
       const tipX = x + face * (reach + 32),
         tipY = armY;
       const progress = Math.min(
@@ -160,12 +168,16 @@ export function drawBoss(
       );
       const flash = time >= -T.boss.cueLead;
       const radius = flash ? P.boss.flashRadius : 72 - progress * 40;
-      g.lineStyle(flash ? 7 : 3, flash ? 0xfffbe3 : 0xffc866, flash ? 1 : 0.65);
+      g.lineStyle(
+        flash ? 7 : 3,
+        unblockable ? 0xff3659 : flash ? 0xfffbe3 : 0xffc866,
+        flash ? 1 : 0.65,
+      );
       g.strokeCircle(tipX, tipY, radius);
       if (flash) {
-        g.fillStyle(0xfff6c7, 0.7);
+        g.fillStyle(unblockable ? 0xff3659 : 0xfff6c7, 0.7);
         g.fillCircle(tipX, tipY, 18);
-        g.lineStyle(5, 0xfffbe3, 1);
+        g.lineStyle(5, unblockable ? 0xff3659 : 0xfffbe3, 1);
         g.lineBetween(
           tipX - P.boss.sparkRadius,
           tipY,
@@ -178,7 +190,7 @@ export function drawBoss(
           tipX,
           tipY + P.boss.sparkRadius,
         );
-        g.lineStyle(9, 0xfff0b3, 0.8);
+        g.lineStyle(9, unblockable ? 0xff3659 : 0xfff0b3, 0.8);
         g.lineBetween(x + face * 50, y - 140, tipX, tipY);
       }
     }
@@ -194,7 +206,7 @@ export function drawBoss(
     }
     if (kind === "metal" && ready) {
       if (active && state.recoil < 8) {
-        g.fillStyle(0xffe7a6, 0.5);
+        g.fillStyle(attackColor, 0.5);
         const originHeight =
           shear === "overhead" ? 280 : shear === "rising" ? 20 : 145;
         g.fillTriangle(
@@ -207,14 +219,18 @@ export function drawBoss(
         );
       }
       const left = face < 0 ? x - T.boss.meleeRange : x;
-      g.fillStyle(0xffe7a6, active ? 0.28 : motion * 0.08);
+      g.fillStyle(attackColor, active ? 0.28 : motion * 0.08);
       g.fillRect(
         left,
         y - T.boss.meleeHeight,
         T.boss.meleeRange,
         T.boss.meleeHeight,
       );
-      g.lineStyle(active ? 8 : 2, 0xffefb8, active ? 0.9 : motion * 0.5);
+      g.lineStyle(
+        active ? 8 : 2,
+        unblockable ? 0xff3659 : 0xffefb8,
+        active ? 0.9 : motion * 0.5,
+      );
       g.lineBetween(x, y - 58, x + face * T.boss.meleeRange, y - 58);
     }
   }
@@ -224,7 +240,7 @@ export function drawBoss(
   }
   if (kind === "quake" && !broken && !defeated) {
     const opacity = active ? 0.8 : Math.max(0, wind - 0.3) * 0.6;
-    g.fillStyle(0xf4a35b, opacity);
+    g.fillStyle(0xff3659, opacity);
     g.fillRect(
       Math.max(T.world.left, x - T.boss.quakeRange),
       y - T.boss.quakeHeight,
@@ -233,7 +249,7 @@ export function drawBoss(
       T.boss.quakeHeight,
     );
     for (let px = x - T.boss.quakeRange; px < x + T.boss.quakeRange; px += 35) {
-      g.lineStyle(2, 0xffe1a4, opacity);
+      g.lineStyle(2, 0xff8da0, opacity);
       g.lineBetween(px, y - 4, px + 10, y - (active ? 30 : 10));
     }
   }

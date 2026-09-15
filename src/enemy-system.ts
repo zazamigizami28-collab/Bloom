@@ -11,6 +11,7 @@ export function updateEnemy(game: Practice, dt: number) {
     !game.debug.stopAI &&
     !game.breakMeter.broken &&
     game.defeatedAt < 0 &&
+    !p.stationary &&
     game.cycle < p.windup * T.boss.moveUntil
   )
     game.boss.move(dt, game.x);
@@ -22,11 +23,17 @@ export function updateEnemy(game: Practice, dt: number) {
     const kind = event.kind;
     if (
       kind !== "quake" &&
+      !event.unblockable &&
       time >= -(game.mode === "boss" ? T.boss.cueLead : T.parry.cueLead) &&
       !game.cued.has(i)
     ) {
       game.cued.add(i);
       game.emit({ type: "sound", kind: "cue" });
+    }
+    if (event.unblockable && time >= -T.boss.dangerLead && !game.cued.has(i)) {
+      game.cued.add(i);
+      game.emit({ type: "sound", kind: "quakeCue" });
+      game.say("赤い剪定！ Space / B：ローリング", 1000);
     }
     if (kind === "water" || kind === "fertilizer" || kind === "pellet") {
       if (time >= 0 && !game.resolved.has(i)) {
@@ -55,7 +62,7 @@ export function updateEnemy(game: Practice, dt: number) {
       );
     }
     if (kind === "quake") {
-      if (time >= -400 && !game.cued.has(i)) {
+      if (time >= -T.boss.dangerLead && !game.cued.has(i)) {
         game.cued.add(i);
         game.emit({ type: "sound", kind: "quakeCue" });
         game.say("地面が光る！ W / A：ジャンプ", 800);
@@ -73,7 +80,7 @@ export function updateEnemy(game: Practice, dt: number) {
           game.hurtAt = game.clock;
           if (!game.debug.invincible) game.hp -= T.dummy.damage;
           game.combo = 0;
-          game.say("橙の地面攻撃はジャンプで越えよう", 1300);
+          game.say("赤い地面攻撃はジャンプで越えよう", 1300);
           if (game.hp <= 0) {
             game.deadAt = game.clock;
             game.say("ひと息ついて、もう一度。", T.retry);
@@ -104,7 +111,7 @@ export function updateEnemy(game: Practice, dt: number) {
         game.resolved.add(i);
         game.attempts++;
         const grade =
-          game.face === -game.enemyFacing
+          !event.unblockable && game.face === -game.enemyFacing
             ? parryGrade(game.clock - game.parryAt, T.parry.window)
             : "miss";
         if (grade !== "miss") {
@@ -148,11 +155,13 @@ export function updateEnemy(game: Practice, dt: number) {
             game.emit({ type: "shake", duration: 110, intensity: 0.003 });
             const since = game.clock - game.parryAt;
             game.say(
-              game.face !== -game.enemyFacing
-                ? "相手の方を向こう"
-                : since < 600
-                  ? "パリィが早い — 光るまで待とう"
-                  : "攻撃が先に届いた — 光に合わせて K",
+              event.unblockable
+                ? "赤い攻撃はパリィ不可 — ローリングで回避"
+                : game.face !== -game.enemyFacing
+                  ? "相手の方を向こう"
+                  : since < 600
+                    ? "パリィが早い — 光るまで待とう"
+                    : "攻撃が先に届いた — 光に合わせて K",
             );
             if (game.hp <= 0) {
               game.deadAt = game.clock;
@@ -174,9 +183,9 @@ export function finishEnemyCycle(game: Practice) {
     game.cycle >
     p.windup +
       p.events[p.events.length - 1].at +
-      (game.mode === "boss" ? T.boss.rest : T.dummy.rest)
+      (game.mode === "boss" ? (p.rest ?? T.boss.rest) : T.dummy.rest)
   ) {
-    if (game.mode === "boss") game.boss.next();
+    if (game.mode === "boss") game.boss.next(game.x);
     game.restartCycle();
     game.cycle = 0;
   }
