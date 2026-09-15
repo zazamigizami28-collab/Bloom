@@ -240,7 +240,12 @@ export function drawBoss(
     g.strokeCircle(x, y - 67, 64 + Math.sin(state.clock / 50) * 5);
   }
   if (kind === "quake" && !broken && !defeated) {
-    const opacity = active ? 0.8 : Math.max(0, wind - 0.3) * 0.6;
+    const jumpNow = time >= -T.boss.cueLead && time < 0;
+    const opacity = active
+      ? 0.8
+      : jumpNow
+        ? 0.7
+        : Math.max(0, wind - 0.3) * 0.12;
     g.fillStyle(0xff3659, opacity);
     g.fillRect(
       Math.max(T.world.left, x - T.boss.quakeRange),

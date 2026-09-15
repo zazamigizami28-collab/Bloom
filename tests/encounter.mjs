@@ -283,7 +283,7 @@ for (const [distance, name] of [
 }
 const back = new Boss();
 back.next(back.x + 120);
-assert(back.pattern.events[0].unblockable);
+assert(back.pattern.name.includes("後方除草"));
 for (let i = 0; i < 1; i++) {
   back.next(back.x + 120);
   assert(!back.pattern.events[0].unblockable, "no consecutive rear punishment");
@@ -306,8 +306,8 @@ for (const rolling of [false, true]) {
   g.parryAt = g.clock;
   if (rolling) g.rollAt = g.clock;
   updateEnemy(g, 0);
-  assert.equal(g.success, 0);
-  assert.equal(g.hp, rolling ? 5 : 4);
+  assert.equal(g.success, rolling ? 0 : 1);
+  assert.equal(g.hp, 5);
 }
 const extension = new Boss();
 for (const distance of [150, 280, 500]) {
@@ -378,12 +378,12 @@ for (const phase of [1, 2]) {
     const g = make();
     g.debug.stopAI = false;
     g.boss.phase = phase;
-    g.boss.turn = 1;
+    g.boss.turn = phase === 1 ? 6 : 5;
     const p = g.attackPattern,
       last = p.events.at(-1);
     assert(last.unblockable || last.kind === "quake");
     assert(last.at - p.events.at(-2).at >= T.boss.dangerLead + T.dummy.active);
-    g.cycle = p.windup + last.at - T.boss.dangerLead;
+    g.cycle = p.windup + last.at - T.boss.cueLead;
     g.resolved = new Set(p.events.slice(0, -1).map((_, i) => i));
     g.x = g.enemyX - 120;
     g.face = 1;
@@ -406,3 +406,53 @@ for (const phase of [1, 2]) {
 console.log(
   "PASS: distinct attack rhythms, red final-hit lead, single warning, final parry rejection and roll escape.",
 );
+
+for (const phase of [1, 2])
+  for (let turn = 0; turn < 18; turn++) {
+    const b = new Boss();
+    b.phase = phase;
+    b.turn = turn;
+    const events = b.pattern.events;
+    assert(!events.some((e) => e.kind === "quake"));
+    events.forEach((e, i) =>
+      assert.equal(
+        !!e.unblockable,
+        b.pattern.name.includes("高枝") && i === events.length - 1,
+      ),
+    );
+  }
+const slower = make();
+slower.boss.next(slower.enemyX - 150);
+slower.debug.stopAI = false;
+assert.equal(slower.attackPattern.events[1].at, 460);
+slower.resolved.add(0);
+slower.cycle = slower.attackPattern.windup + 460 - T.boss.cueLead;
+slower.parryAt = slower.clock;
+slower.clock += T.boss.cueLead;
+updateEnemy(slower, T.boss.cueLead);
+assert.equal(slower.success, 1);
+console.log(
+  "PASS: only high-branch final hit is red; slower short-branch second hit responds to cue.",
+);
+assert.equal(T.parry.cueLead, 160);
+assert.equal(T.boss.cueLead, 160);
+const jumpCue = make();
+jumpCue.debug.stopAI = false;
+jumpCue.boss.selected = {
+  name: "jump timing regression",
+  windup: 1300,
+  stationary: true,
+  events: [{ at: 0, kind: "quake" }],
+};
+jumpCue.x = jumpCue.enemyX - 160;
+jumpCue.cycle = 1139;
+jumpCue.drainEvents();
+updateEnemy(jumpCue, 0);
+assert(
+  !jumpCue.events.some((e) => e.type === "sound" && e.kind === "quakeCue"),
+);
+updateEnemy(jumpCue, 1);
+assert(jumpCue.events.some((e) => e.type === "sound" && e.kind === "quakeCue"));
+jumpCue.update({ jump: true }, 16);
+for (let i = 0; i < 9; i++) jumpCue.update({}, 16);
+assert.equal(jumpCue.hp, 5, "jump on the 160ms cue clears the ground attack");

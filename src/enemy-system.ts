@@ -47,7 +47,7 @@ export function updateEnemy(game: Practice, dt: number) {
       game.cued.add(i);
       game.emit({ type: "sound", kind: "cue" });
     }
-    if (event.unblockable && time >= -T.boss.dangerLead && !game.cued.has(i)) {
+    if (event.unblockable && time >= -T.boss.cueLead && !game.cued.has(i)) {
       game.cued.add(i);
       game.emit({ type: "sound", kind: "quakeCue" });
       game.say("赤い剪定！ Space / B：ローリング", 1000);
@@ -79,7 +79,7 @@ export function updateEnemy(game: Practice, dt: number) {
       );
     }
     if (kind === "quake") {
-      if (time >= -T.boss.dangerLead && !game.cued.has(i)) {
+      if (time >= -T.boss.cueLead && !game.cued.has(i)) {
         game.cued.add(i);
         game.emit({ type: "sound", kind: "quakeCue" });
         game.say("地面が光る！ W / A：ジャンプ", 800);

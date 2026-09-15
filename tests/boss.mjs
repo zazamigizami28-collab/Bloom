@@ -75,6 +75,11 @@ const q = boss();
 q.x = 610;
 q.boss.phase = 2;
 q.boss.turn = 2;
+q.boss.selected = {
+  name: "test quake",
+  windup: 1300,
+  events: [{ at: 0, kind: "quake" }],
+};
 q.cycle = 1290;
 q.parryAt = 0;
 updateEnemy(q, 20);
@@ -84,6 +89,11 @@ const jump = boss();
 jump.x = 610;
 jump.boss.phase = 2;
 jump.boss.turn = 2;
+jump.boss.selected = {
+  name: "test quake",
+  windup: 1300,
+  events: [{ at: 0, kind: "quake" }],
+};
 jump.cycle = 1290;
 jump.y = T.world.ground - 40;
 updateEnemy(jump, 20);

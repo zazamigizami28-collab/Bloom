@@ -183,7 +183,10 @@ export class Practice extends GameState {
       this.restartCycle();
       this.emit({ type: "sound", kind: "phase" });
       this.emit({ type: "bloom", x: this.enemyX, y: T.world.ground - 90 });
-      this.say("HRT-01・過給運転  /  赤い地面はジャンプ", T.boss.transition);
+      this.say(
+        "HRT-01・過給運転  /  高枝の最終段は赤い攻撃",
+        T.boss.transition,
+      );
     }
     if (this.dummyHP === 0) {
       this.healAt = -1;

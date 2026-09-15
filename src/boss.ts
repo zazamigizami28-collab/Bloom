@@ -25,11 +25,6 @@ const rush: AttackPattern = {
     { at: 1680, kind: "metal", shear: "overhead" },
   ],
 };
-const quake: AttackPattern = {
-  name: "土壌転圧：ジャンプ",
-  windup: 1300,
-  events: [{ at: 0, kind: "quake" }],
-};
 const mixed: AttackPattern = {
   name: "過給噴水・交互射出",
   windup: 900,
@@ -67,11 +62,11 @@ const quick: AttackPattern = {
   events: [{ at: 0, kind: "metal", shear: "rising" }],
 };
 const rear: AttackPattern = {
-  name: "後方除草・反転掃討：回避",
+  name: "後方除草・反転掃討",
   windup: 1050,
   stationary: true,
   rest: T.boss.rearRest,
-  events: [{ at: 0, kind: "metal", shear: "sweep", unblockable: true }],
+  events: [{ at: 0, kind: "metal", shear: "sweep" }],
 };
 export class Boss {
   selected: AttackPattern | undefined;
@@ -96,7 +91,17 @@ export class Boss {
             overhead,
             shears,
           ]
-        : [mixed, rush, quake, shears, charge, overhead, mixed, rising, shears];
+        : [
+            mixed,
+            rush,
+            rising,
+            shears,
+            charge,
+            overhead,
+            mixed,
+            rising,
+            shears,
+          ];
     const base = this.selected ?? sequence[this.turn % sequence.length];
     // Distinct rhythms; ranged cadence stays as evaluated in v0.6.7.
     const rhythm =
@@ -107,24 +112,17 @@ export class Boss {
           : base === rising
             ? [0, 680, 1500, 2460]
             : base === quick
-              ? [0, 280, 1160, 2020]
+              ? [0, 460, 1340, 2200]
               : base === charge
                 ? [0, 1000, 1820, 2920]
                 : base === rear
                   ? [0, 780, 1740, 2660]
-                  : base === quake
-                    ? [0, 680, 1560, 2540]
-                    : [0, 320, 1420, 2520];
+                  : [0, 320, 1420, 2520];
     const ranged = base === irrigation || base === mixed;
     const events = [...base.events];
     while (events.length < 3)
       events.push({ at: 0, kind: "metal", shear: "sweep" });
-    if (this.phase === 2)
-      events.push(
-        base === charge || base === rush || base === overhead
-          ? { at: 0, kind: "quake" }
-          : { at: 0, kind: "metal", shear: "sweep" },
-      );
+    if (this.phase === 2) events.push({ at: 0, kind: "metal", shear: "sweep" });
     for (let i = 0; i < events.length; i++) {
       const event = events[i];
       events[i] = {
@@ -134,9 +132,7 @@ export class Boss {
             ? base.events[i].at
             : base.events[2].at + 950
           : rhythm[i],
-        unblockable:
-          event.unblockable ||
-          (!ranged && i === events.length - 1 && event.kind === "metal"),
+        unblockable: base === overhead && i === events.length - 1,
         shear:
           !ranged && i === events.length - 1 && event.kind === "metal"
             ? "overhead"

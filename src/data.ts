@@ -1,3 +1,4 @@
+export const MIN_TELEGRAPH_MS = 160;
 export const tuning = {
   player: {
     hp: 5,
@@ -12,7 +13,7 @@ export const tuning = {
   roll: { duration: 420, cooldown: 750, speed: (650 * 2) / 3 },
   parry: {
     window: 180,
-    cueLead: 80,
+    cueLead: MIN_TELEGRAPH_MS,
     perfect: 60,
     recovery: 330,
     buffer: 80,
@@ -67,8 +68,8 @@ export const tuning = {
     speed: 82,
     approachDistance: 235,
     moveUntil: 0.55,
-    aimLock: 100,
-    cueLead: 160,
+    aimLock: MIN_TELEGRAPH_MS,
+    cueLead: MIN_TELEGRAPH_MS,
     parryRecoil: 36,
     perfectRecoil: 54,
     meleeRange: 300,
