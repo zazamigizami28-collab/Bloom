@@ -1,12 +1,12 @@
-import { MIN_TELEGRAPH_MS } from "./data";
+import { TELEGRAPH_LIGHT_MS } from "./data";
 import type Phaser from "phaser";
 export function telegraphFrame(time: number) {
   const progress = Math.max(
     0,
-    Math.min(1, (time + MIN_TELEGRAPH_MS) / MIN_TELEGRAPH_MS),
+    Math.min(1, (time + TELEGRAPH_LIGHT_MS) / TELEGRAPH_LIGHT_MS),
   );
   return {
-    visible: time >= -MIN_TELEGRAPH_MS && time < 0,
+    visible: time >= -TELEGRAPH_LIGHT_MS && time < 0,
     progress,
     white: progress >= 0.5,
     radius: 42 * (1 - progress) + 6,

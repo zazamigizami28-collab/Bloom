@@ -3,7 +3,7 @@ import { drawBoss } from "./boss-view";
 import Phaser from "phaser";
 import type { GameSnapshot } from "./game-state";
 import type { Sparks } from "./effects";
-import { tuning as T } from "./data";
+import { tuning as T, TELEGRAPH_LIGHT_MS } from "./data";
 import { pot, dummy, plant } from "./render";
 import { attackRect, attackActive } from "./combat";
 export interface ViewResources {
@@ -118,7 +118,7 @@ export function drawScene(
     next?.kind !== "quake" &&
     !(scene.mode === "boss" && next?.kind === "metal") &&
     scene.boss.transition === 0 &&
-    time >= -(scene.mode === "boss" ? T.boss.cueLead : T.parry.cueLead) &&
+    time >= -TELEGRAPH_LIGHT_MS &&
     time < 0 &&
     !active &&
     !scene.breakMeter.broken &&
@@ -131,6 +131,24 @@ export function drawScene(
       time,
       !!next?.unblockable,
     );
+  }
+  // A rapid follow-up can start its light before the previous active window ends.
+  if (
+    !scene.breakMeter.broken &&
+    scene.defeatedAt < 0 &&
+    scene.boss.transition === 0
+  ) {
+    for (const event of p.events) {
+      const cueTime = scene.cycle - (p.windup + event.at);
+      if (event !== next && cueTime >= -TELEGRAPH_LIGHT_MS && cueTime < 0)
+        drawTelegraph(
+          g,
+          scene.enemyX + scene.enemyFacing * 73,
+          T.world.ground - 150,
+          cueTime,
+          !!event.unblockable,
+        );
+    }
   }
   if (scene.mode === "practice" && active && next?.kind === "metal") {
     g.lineStyle(6, 0xffe7a6, 0.8);

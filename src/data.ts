@@ -1,4 +1,5 @@
 export const MIN_TELEGRAPH_MS = 160;
+export const TELEGRAPH_LIGHT_MS = 320;
 export const tuning = {
   player: {
     hp: 5,

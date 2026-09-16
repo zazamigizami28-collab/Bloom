@@ -136,3 +136,7 @@ AUDIT-0.6.9.md優先。赤い攻撃は高枝最終段のみ、地面攻撃は選
 
 ## v0.6.10 最新
 発光はtelegraph.tsを共有。開始-160ms、白化-80ms、攻撃0msで消灯。構え時間から発光を算出しない。
+
+
+## v0.6.11 現行基準
+HRT-01開発終了（ユーザー判断）、Phase 7未着手。光だけ320msへ延長、音/白化/方向固定160ms。docs/HRT-01-RETROSPECTIVE.mdとdocs/BOSS-DEVELOPMENT-GUIDE.mdを次ボス着手前に読む。
