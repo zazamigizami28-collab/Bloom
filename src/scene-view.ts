@@ -1,3 +1,4 @@
+import { drawTelegraph } from "./telegraph";
 import { drawBoss } from "./boss-view";
 import Phaser from "phaser";
 import type { GameSnapshot } from "./game-state";
@@ -123,17 +124,12 @@ export function drawScene(
     !scene.breakMeter.broken &&
     scene.defeatedAt < 0
   ) {
-    g.lineStyle(3, 0xfff1a0, 1);
-    g.strokeCircle(
+    drawTelegraph(
+      g,
       scene.enemyX + attackFacing * 73,
       T.world.ground - 150,
-      (scene.mode === "boss" ? 32 : 12) + Math.sin(scene.clock / 40) * 4,
-    );
-    g.lineBetween(
-      scene.enemyX + attackFacing * 96,
-      T.world.ground - 150,
-      scene.enemyX + attackFacing * 50,
-      T.world.ground - 150,
+      time,
+      !!next?.unblockable,
     );
   }
   if (scene.mode === "practice" && active && next?.kind === "metal") {

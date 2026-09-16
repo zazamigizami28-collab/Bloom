@@ -135,7 +135,7 @@ export function dummy(
   g.fillRect(x - 32, ground - 110, 64, 50);
   g.fillStyle(0xb6b69a);
   g.fillRect(x - 35, ground - 118, 70, 12);
-  g.fillStyle(wind > 0.84 ? 0xfff4ad : 0xe5b771);
+  g.fillStyle(0xe5b771);
   g.fillRect(x - 20, ground - 96, 14, 10);
   g.fillRect(x + 6, ground - 96, 14, 10);
   g.lineStyle(13, 0x8c9c86);

@@ -1,7 +1,7 @@
 import Phaser from "phaser";
 import type { AttackEvent } from "./data";
 import { shearPose } from "./shear-pose";
-import { presentation as P } from "./presentation";
+import { drawTelegraph } from "./telegraph";
 import type { GameSnapshot } from "./game-state";
 import { tuning as T } from "./data";
 export function drawBoss(
@@ -155,46 +155,8 @@ export function drawBoss(
       x + face * (reach + 32),
       armY + pose.opening,
     );
-    if (
-      kind === "metal" &&
-      ready &&
-      time >= -(unblockable ? T.boss.dangerLead : P.boss.gather) &&
-      time < 0
-    ) {
-      const tipX = x + face * (reach + 32),
-        tipY = armY;
-      const progress = Math.min(
-        1,
-        (time + P.boss.gather) / (P.boss.gather - T.boss.cueLead),
-      );
-      const flash = time >= -T.boss.cueLead;
-      const radius = flash ? P.boss.flashRadius : 72 - progress * 40;
-      g.lineStyle(
-        flash ? 7 : 3,
-        unblockable ? 0xff3659 : flash ? 0xfffbe3 : 0xffc866,
-        flash ? 1 : 0.65,
-      );
-      g.strokeCircle(tipX, tipY, radius);
-      if (flash) {
-        g.fillStyle(unblockable ? 0xff3659 : 0xfff6c7, 0.7);
-        g.fillCircle(tipX, tipY, 18);
-        g.lineStyle(5, unblockable ? 0xff3659 : 0xfffbe3, 1);
-        g.lineBetween(
-          tipX - P.boss.sparkRadius,
-          tipY,
-          tipX + P.boss.sparkRadius,
-          tipY,
-        );
-        g.lineBetween(
-          tipX,
-          tipY - P.boss.sparkRadius,
-          tipX,
-          tipY + P.boss.sparkRadius,
-        );
-        g.lineStyle(9, unblockable ? 0xff3659 : 0xfff0b3, 0.8);
-        g.lineBetween(x + face * 50, y - 140, tipX, tipY);
-      }
-    }
+    if (kind === "metal" && ready)
+      drawTelegraph(g, x + face * (reach + 32), armY, time, unblockable);
     if (state.recoil > 8 && ready) {
       g.lineStyle(4, 0xffdf96, Math.min(1, state.recoil / 30));
       for (let i = 0; i < 3; i++)

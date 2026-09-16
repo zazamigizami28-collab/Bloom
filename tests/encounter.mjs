@@ -456,3 +456,11 @@ assert(jumpCue.events.some((e) => e.type === "sound" && e.kind === "quakeCue"));
 jumpCue.update({ jump: true }, 16);
 for (let i = 0; i < 9; i++) jumpCue.update({}, 16);
 assert.equal(jumpCue.hp, 5, "jump on the 160ms cue clears the ground attack");
+
+const { telegraphFrame } = load("telegraph");
+assert(!telegraphFrame(-161).visible);
+assert(telegraphFrame(-160).visible);
+assert(!telegraphFrame(-81).white);
+assert(telegraphFrame(-80).white);
+assert(telegraphFrame(-1).radius < telegraphFrame(-80).radius);
+assert(!telegraphFrame(0).visible);
