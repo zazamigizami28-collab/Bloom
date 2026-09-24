@@ -24,6 +24,7 @@ class Garden extends Phaser.Scene {
   flowerText!: Phaser.GameObjects.Text;
   create() {
     this.model = new Practice("boss");
+    this.model.location = "hub";
     this.keys = new Controls();
     this.soundFX = new AudioFeedback();
     this.sparks = new Sparks();

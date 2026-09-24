@@ -3,6 +3,7 @@ import ts from "typescript";
 import assert from "node:assert/strict";
 const core = [
   "practice",
+  "journey",
   "game-state",
   "combat",
   "flower",

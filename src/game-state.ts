@@ -17,6 +17,10 @@ export type PlayerAction =
   | "heal";
 export type EnemyStatus = "active" | "broken" | "defeated";
 export class GameState {
+  location: "hub" | "path" | "gate" | "battle" = "battle";
+  restoredGarden = false;
+  pathWater = false;
+  pathValve = false;
   mode: "practice" | "boss" = "practice";
   boss = new Boss();
   get attackPattern(): AttackPattern {
@@ -136,6 +140,10 @@ export class GameState {
 }
 export function snapshot(state: GameState) {
   return {
+    location: state.location,
+    restoredGarden: state.restoredGarden,
+    pathWater: state.pathWater,
+    pathValve: state.pathValve,
     mode: state.mode,
     healing: state.healing,
     healAt: state.healAt,

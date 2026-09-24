@@ -16,7 +16,7 @@ export function bindControls(commands: PracticeCommands, audio: AudioFeedback) {
     on(el(id), "click", handler);
   click("play", () => {
     audio.unlock();
-    commands.command({ type: "begin" });
+    commands.command({ type: "home" });
   });
   click("bossMode", () => {
     audio.unlock();
@@ -26,6 +26,9 @@ export function bindControls(commands: PracticeCommands, audio: AudioFeedback) {
     audio.unlock();
     commands.command({ type: "mode", value: "practice" });
   });
+  click("home", () => commands.command({ type: "home" }));
+  click("returnHome", () => commands.command({ type: "home" }));
+  click("interact", () => commands.command({ type: "interact" }));
   click("rematch", () => commands.command({ type: "mode", value: "boss" }));
   click("resume", () => commands.command({ type: "pause", value: false }));
   click("sound", () => {
@@ -90,11 +93,16 @@ export function renderControls(state: GameSnapshot) {
     state.clock - state.defeatedAt >= T.encounter.victoryReveal
   );
   renderEncounter(state);
+  el("interact").hidden = state.location === "battle";
   el<HTMLButtonElement>("bossMode").textContent =
     state.mode === "boss" ? "ボス戦をやり直す" : "番人に挑む";
   el<HTMLSelectElement>("pattern").disabled = state.mode === "boss";
   el("resume").textContent =
-    state.mode === "boss" ? "戦闘に戻る" : "稽古に戻る";
+    state.location !== "battle"
+      ? "庭に戻る"
+      : state.mode === "boss"
+        ? "戦闘に戻る"
+        : "稽古に戻る";
   el("start").hidden = state.started;
   el("pause").hidden = !state.started || !state.paused;
   el<HTMLSelectElement>("pattern").value = state.pattern;

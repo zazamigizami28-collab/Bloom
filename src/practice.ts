@@ -1,3 +1,4 @@
+import { updateJourney, interactJourney } from "./journey";
 import {
   announceBloom,
   updateFlower,
@@ -29,6 +30,17 @@ export class Practice extends GameState {
   }
   command(command: PracticeCommand) {
     switch (command.type) {
+      case "home":
+        if (this.mode === "boss" && this.defeatedAt >= 0)
+          this.restoredGarden = true;
+        this.mode = "practice";
+        this.begin();
+        this.location = "hub";
+        this.x = 220;
+        return;
+      case "interact":
+        if (!this.paused) interactJourney(this);
+        return;
       case "mode":
         this.mode = command.value;
         this.begin(true);
@@ -88,6 +100,7 @@ export class Practice extends GameState {
     }
   }
   begin(withIntro = false) {
+    this.location = "battle";
     this.paused = false;
     this.started = true;
     this.reset(false);
@@ -226,9 +239,13 @@ export class Practice extends GameState {
     this.messageUntil = this.clock + duration;
   }
   update(input: ActionInput, delta: number) {
-    if (input.start && !this.started) this.begin(true);
+    if (input.start && !this.started) this.command({ type: "home" });
     if (input.pause && this.started) this.pause(!this.paused);
     if (!this.started || this.paused) return;
+    if (this.location !== "battle") {
+      updateJourney(this, input, delta);
+      return;
+    }
     if (this.freeze > 0) {
       this.freeze -= delta;
       if (input.parry && !this.rolling && !this.healing)

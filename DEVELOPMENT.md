@@ -146,3 +146,6 @@ Phase 7評価版。AUDIT-0.7.0.md優先。ボス命中時enemyHitAt/35ms停止�
 
 ## v0.7.1 現行基準
 開始コマンド/Startはbegin(true)で1200ms導入、低レベルbegin()は演出なしの初期化。敗北はdefeat()へ集約、900ms後の自動再戦は導入を繰り返さない。勝利結果は1100ms後。全表示はsnapshot/ゲーム時計から導出し休止に従う。文書索引docs/README.md。
+
+## v0.8.0 現行基準
+Phase 9評価版。locationはhub/path/gate/battleでmodeとは別。非戦闘はjourneyで更新しAI/戦闘処理へ入らない。home命令で戦闘状態を初期化、勝利後ならrestoredGardenを保持。開始画面は庭へ。既存beginは直接戦闘の初期化。ボス死亡リトライはbattle内を維持。画面リロード時の進行保存は未実装。

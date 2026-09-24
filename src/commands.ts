@@ -1,5 +1,6 @@
 import type { Pattern } from "./data";
 export type PracticeCommand =
+  | { type: "home" | "interact" }
   | { type: "mode"; value: "practice" | "boss" }
   | { type: "begin" | "heal" | "replay" | "break" | "fertilize" | "reset" }
   | { type: "pause"; value: boolean }

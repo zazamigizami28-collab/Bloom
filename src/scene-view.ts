@@ -1,3 +1,4 @@
+import { drawJourney } from "./journey-view";
 import { drawTelegraph, beginTelegraphs, flushTelegraphs } from "./telegraph";
 import { drawBoss } from "./boss-view";
 import Phaser from "phaser";
@@ -20,6 +21,10 @@ export function drawScene(
   view: ViewResources,
   sparks: Sparks,
 ) {
+  if (scene.location !== "battle") {
+    drawJourney(scene, view, sparks);
+    return;
+  }
   const checked = (id: string) =>
     (document.getElementById(id) as HTMLInputElement).checked;
   const g = view.g;

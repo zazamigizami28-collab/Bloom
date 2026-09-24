@@ -1,6 +1,6 @@
-# 花 / Bloom-Break — v0.7.1
+# 花 / Bloom-Break — v0.8.0
 
-Webで動作する植木鉢の主人公と園芸機械の2Dアクション。HRT-01の開発完了版です（ユーザー判断）。Phase 7の操作感はユーザー実機確認済み。現在は開始・敗北・勝利演出の追加版です。
+Webで動作する植木鉢の主人公と園芸機械の2Dアクション。HRT-01の開発完了版です（ユーザー判断）。Phase 7の操作感はユーザー実機確認済み。Phase 8はユーザー判断で完了。現在はPhase 9の拠点→短探索→ボス→帰還の評価版です。
 
 ## 起動
 Node.js 24.19.0で検証。依存はpackage-lock.jsonで固定しています。
@@ -37,7 +37,7 @@ A/D移動、Wジャンプ、Spaceローリング、J攻撃・BREAK中の一撃�
 調整値: src/data.ts。ボスの移動/攻撃順: src/boss.ts。ボス描画: src/boss-view.ts。戦闘進行: src/practice.ts。状態/共通敵座標・矩形: src/game-state.ts。敵攻撃: src/enemy-system.ts。花: src/flower.ts、src/flower-system.ts。入力/UI: src/input.ts、src/ui.ts。詳細はDEVELOPMENT.md、実装規則はAGENTS.md。
 
 ## 状態と残件
-AUDIT-0.7.1.mdを参照。v0.7.0の実機プレイ感はユーザー確認済み。今回追加した入退場演出の実機評価は未取得。HRT-01の攻撃設計はv0.6.11で開発終了。予兆は点灯480ms・白化240ms・音160ms。サブ花・複数ボス・拠点・探索は未実装。実装基準v0.5原文との逐条照合は未完了。
+AUDIT-0.7.1.mdを参照。v0.7.0の実機プレイ感はユーザー確認済み。今回追加した入退場演出の実機評価は未取得。HRT-01の攻撃設計はv0.6.11で開発終了。予兆は点灯480ms・白化240ms・音160ms。拠点・2画面の探索・帰還を実装。サブ花・複数ボスは未実装。実装基準v0.5原文との逐条照合は未完了。
 
 ## 保存・復旧
 ChatGPT Workで開発しGitHubを永続保存先にします。Replitは使用しません。変更前原本とバージョン変更を分けて保存し、各版のリモートコミットを確認して完了報告します。復旧時はGitHubを新規取得しnpm ci→npm run check→起動。過去ログはdocs/、監査原本はAUDIT-*.md。認証トークン、node_modules、生成distはソース管理しません。旧Sites配信は.openai/hosting.jsonの既存プロジェクトを継続します。
@@ -47,3 +47,6 @@ ChatGPT Workで開発しGitHubを永続保存先にします。Replitは使用�
 
 ## 構成案内
 [文書一覧と現行基準](docs/README.md) / [ファイル構成レビュー](docs/REPOSITORY-STRUCTURE.md)。演出の状態はgame-state/practice、入退場表示はsrc/encounter-view.ts、音はsrc/audio.tsを編集。
+
+## Phase 9の遊び方
+開始は小さな庭。A/D移動、Wジャンプ、J/パッドXで近くの対象を調べる。右端から水路→温室前へ。中央の水門を開き、右端からボス戦へ。勝利画面の「庭へ帰る」で花と住人の変化を確認。練習場・ボス直接再戦は既存ボタンから利用可能。探索は短い移動と調査で、雑魚戦や収集インベントリはありません。帰還状態はセッション内のみ。

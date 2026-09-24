@@ -1,11 +1,11 @@
 # 開発資料の入口
-現行: v0.7.1。v0.7.0は実機プレイ感をユーザー確認済み。v0.7.1の入退場演出は評価待ち。
+現行: v0.8.0 / Phase 9評価版。v0.7.0は実機プレイ感をユーザー確認済み。v0.7.1の入退場演出は評価待ち。
 
 | 目的 | 読むもの |
 | --- | --- |
 | 起動・操作・現状 | [README](../README.md) |
 | 変更規則 | [AGENTS](../AGENTS.md) |
-| 最新版の内容・検証 | [AUDIT-0.7.1](../AUDIT-0.7.1.md) |
+| 最新版の内容・検証 | [AUDIT-0.8.0](../AUDIT-0.8.0.md) |
 | 版ごとの差分 | [CHANGELOG](../CHANGELOG.md) |
 | 編集地図・状態更新 | [DEVELOPMENT](../DEVELOPMENT.md)（旧版節は当時の記録） |
 | 構成の判断 | [REPOSITORY-STRUCTURE](REPOSITORY-STRUCTURE.md) |

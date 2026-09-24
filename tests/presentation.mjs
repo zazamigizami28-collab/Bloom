@@ -103,3 +103,42 @@ console.log(
     "PASS: encounter intro gate/pause, defeat once/retry, victory reveal, mode cleanup.",
   );
 }
+{
+  const game = new Practice();
+  game.command({ type: "home" });
+  assert.equal(game.location, "hub");
+  game.x = 900;
+  game.command({ type: "interact" });
+  assert.equal(game.location, "path");
+  const cycle = game.cycle;
+  game.update({}, 34);
+  assert.equal(game.cycle, cycle);
+  game.pause(true);
+  const now = game.clock;
+  game.update({ move: 1 }, 34);
+  assert.equal(game.clock, now);
+  game.pause(false);
+  game.x = 900;
+  game.command({ type: "interact" });
+  assert.equal(game.location, "gate");
+  game.x = 900;
+  game.command({ type: "interact" });
+  assert.equal(game.location, "gate", "gate requires valve");
+  game.x = 490;
+  game.command({ type: "interact" });
+  game.x = 900;
+  game.command({ type: "interact" });
+  assert.equal(game.location, "battle");
+  assert.equal(game.mode, "boss");
+  game.introAt = -1;
+  game.hitDummy(999);
+  game.command({ type: "home" });
+  assert(game.restoredGarden);
+  assert.equal(game.location, "hub");
+  game.command({ type: "mode", value: "practice" });
+  assert.equal(game.location, "battle");
+  assert.equal(game.hp, 5);
+  console.log(
+    "PASS: hub/exploration/gate/boss/return loop, pause, gate condition, practice isolation.",
+  );
+}
