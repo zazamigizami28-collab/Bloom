@@ -33,6 +33,7 @@ a.pause(true);
 a.update({}, 34);
 assert.equal(a.boss.transition, 1400);
 a.pause(false);
+a.update({}, T.bossHit.stop); // New impact stop precedes phase-transition clock.
 for (let i = 0; i < 42; i++) a.update({}, 34);
 assert.equal(a.boss.transition, 0);
 assert(a.cycle < 0);

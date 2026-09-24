@@ -24,10 +24,15 @@ type Flash = {
 export class Sparks {
   particles: Particle[] = [];
   flashes: Flash[] = [];
+  heals: { x: number; y: number; age: number }[] = [];
   lastAxis = 0;
+  heal(x: number, y: number) {
+    this.heals.push({ x, y, age: 0 });
+  }
   clear() {
     this.particles = [];
     this.flashes = [];
+    this.heals = [];
   }
   burst(x: number, y: number, kind: ImpactKind) {
     // A new axis per impact, separated from the previous impact even on the same frame.
@@ -113,6 +118,8 @@ export class Sparks {
     }
   }
   update(dt: number) {
+    this.heals.forEach((h) => (h.age += dt));
+    this.heals = this.heals.filter((h) => h.age < 500);
     for (const f of this.flashes) f.age += dt;
     this.flashes = this.flashes.filter(
       (f) => f.age < (f.kind === "finisher" ? P.finisher.flash : P.parry.flash),
@@ -132,12 +139,23 @@ export class Sparks {
     );
   }
   draw(g: Phaser.GameObjects.Graphics) {
+    for (const h of this.heals) {
+      const a = 1 - h.age / 500;
+      g.lineStyle(3, 0x91ffd0, a);
+      g.strokeCircle(h.x, h.y, 18 + h.age * 0.05);
+      g.lineBetween(h.x - 9, h.y, h.x + 9, h.y);
+      g.lineBetween(h.x, h.y - 9, h.x, h.y + 9);
+    }
     for (const f of this.flashes) {
       const alpha = Math.max(
         0,
         1 - f.age / (f.kind === "finisher" ? P.finisher.flash : P.parry.flash),
       );
       if (f.kind === "parry" || f.kind === "perfect") {
+        if (f.kind === "perfect") {
+          g.lineStyle(3, 0xffffff, alpha);
+          g.strokeCircle(f.x, f.y, 12 + f.age * 0.15);
+        }
         // The impact glyph is mirrored vertically around the exact parry point.
         for (const sign of [-1, 1]) {
           g.fillStyle(0xffa34d, alpha * 0.85);

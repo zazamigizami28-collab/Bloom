@@ -67,6 +67,9 @@ export function bindControls(commands: PracticeCommands, audio: AudioFeedback) {
   };
   for (const id of ["stopAI", "invincible", "speed"])
     on(el(id), "change", debug);
+  const volume = document.getElementById("volume") as HTMLInputElement | null;
+  if (volume)
+    on(volume, "input", () => audio.setVolume(Number(volume.value) / 100));
   debug();
   on(window, "blur", () => commands.command({ type: "pause", value: true }));
   on(document, "visibilitychange", () => {
@@ -84,6 +87,8 @@ export function renderControls(state: GameSnapshot) {
   el<HTMLButtonElement>("bossMode").textContent =
     state.mode === "boss" ? "ボス戦をやり直す" : "番人に挑む";
   el<HTMLSelectElement>("pattern").disabled = state.mode === "boss";
+  el("resume").textContent =
+    state.mode === "boss" ? "戦闘に戻る" : "稽古に戻る";
   el("start").hidden = state.started;
   el("pause").hidden = !state.started || !state.paused;
   el<HTMLSelectElement>("pattern").value = state.pattern;

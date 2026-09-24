@@ -179,8 +179,8 @@ export function updateEnemy(game: Practice, dt: number) {
                 : game.face !== -attackFacing
                   ? "相手の方を向こう"
                   : since < 600
-                    ? "パリィが早い — 光るまで待とう"
-                    : "攻撃が先に届いた — 光に合わせて K",
+                    ? "パリィが早い — 収束と合図音まで待とう"
+                    : "攻撃が先に届いた — 収束と合図音に K",
             );
             if (game.hp <= 0) {
               game.deadAt = game.clock;

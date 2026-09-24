@@ -280,3 +280,16 @@ footer b {
   width: 115px;
   color: #e7d39b;
 }
+
+.settings {
+  display: flex;
+  gap: 24px;
+  padding: 12px 0;
+  align-items: center;
+  font-size: 14px;
+}
+.settings label {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}

@@ -140,3 +140,6 @@ AUDIT-0.6.9.md優先。赤い攻撃は高枝最終段のみ、地面攻撃は選
 
 ## v0.6.11 現行基準
 HRT-01開発終了（ユーザー判断）、Phase 7未着手。光を480msへ修正し、白化は240ms前。音/方向固定は160ms前を維持し、最終合図の最低160msと受付180msは維持する。docs/HRT-01-RETROSPECTIVE.mdとdocs/BOSS-DEVELOPMENT-GUIDE.mdを次ボス着手前に読む。
+
+## v0.7.0 現行基準
+Phase 7評価版。AUDIT-0.7.0.md優先。ボス命中時enemyHitAt/35ms停止はhitDummyで共通化しresetで消去。telegraphの描画を1フレーム内で収集し粒子後にflush。feedbackイベントでBREAK/一撃の揺れをpresentationへ分離。回復healイベントは成長と独立。HUD Textは別カメラ、背景と戦闘描画だけ揺らす。

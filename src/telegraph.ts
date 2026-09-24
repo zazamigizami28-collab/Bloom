@@ -12,6 +12,16 @@ export function telegraphFrame(time: number) {
     radius: 42 * (1 - progress) + 6,
   };
 }
+const pending: (() => void)[] = [];
+let collecting = false;
+export function beginTelegraphs() {
+  pending.length = 0;
+  collecting = true;
+}
+export function flushTelegraphs() {
+  collecting = false;
+  pending.splice(0).forEach((draw) => draw());
+}
 export function drawTelegraph(
   g: Phaser.GameObjects.Graphics,
   x: number,
@@ -19,6 +29,10 @@ export function drawTelegraph(
   time: number,
   danger = false,
 ) {
+  if (collecting) {
+    pending.push(() => drawTelegraph(g, x, y, time, danger));
+    return;
+  }
   const f = telegraphFrame(time);
   if (!f.visible) return;
   const color = f.white ? 0xffffff : danger ? 0xff3659 : 0xffce69;

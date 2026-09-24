@@ -1,3 +1,4 @@
+import { presentation as P } from "./presentation";
 import type { GameEvent } from "./events";
 import type { AudioFeedback } from "./audio";
 import type { Sparks } from "./effects";
@@ -9,6 +10,9 @@ export function presentEvents(
 ) {
   for (const event of events) {
     switch (event.type) {
+      case "feedback":
+        shake(P[event.kind].shakeDuration, P[event.kind].shake);
+        break;
       case "sound":
         audio.play(event.kind);
         break;
@@ -20,6 +24,9 @@ export function presentEvents(
         break;
       case "bloom":
         sparks.bloom(event.x, event.y);
+        break;
+      case "heal":
+        sparks.heal(event.x, event.y);
         break;
       case "growth":
         sparks.growth(event.x, event.y);

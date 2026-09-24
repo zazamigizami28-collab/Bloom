@@ -119,6 +119,7 @@ export class Practice extends GameState {
     this.parryAt = -9999;
     this.attackAt = -9999;
     this.hurtAt = -9999;
+    this.enemyHitAt = -9999;
     this.parryReady = 0;
     this.buffer = -9999;
     this.combo = 0;
@@ -140,7 +141,7 @@ export class Practice extends GameState {
       this.success = 0;
       this.attempts = 0;
     }
-    this.message = "光る瞬間を、受け止めよう";
+    this.message = "近接は収束と合図音、弾は届く瞬間に";
     this.messageUntil = this.clock + 1800;
   }
   addBreak(amount: number) {
@@ -161,11 +162,7 @@ export class Practice extends GameState {
         y: T.world.ground - 65,
         kind: "break",
       });
-      this.emit({
-        type: "shake",
-        duration: 180,
-        intensity: T.feedback.shake * 1.3,
-      });
+      this.emit({ type: "feedback", kind: "break" });
       this.say("BREAK  /  近づいて J：決めの一撃", 1600);
     }
   }
@@ -175,6 +172,11 @@ export class Practice extends GameState {
       (this.mode === "boss" && this.boss.transition > 0)
     )
       return;
+    if (damage <= 0) return;
+    if (this.mode === "boss") {
+      this.enemyHitAt = this.clock;
+      this.freeze = Math.max(this.freeze, T.bossHit.stop);
+    }
     this.dummyHP = Math.max(0, this.dummyHP - damage);
     if (this.mode === "boss" && this.boss.observe(this.dummyHP)) {
       this.projectiles = [];
@@ -278,7 +280,7 @@ export class Practice extends GameState {
           kind: "finisher",
         });
         this.emit({ type: "sound", kind: "finisher" });
-        this.emit({ type: "shake", duration: 180, intensity: 0.008 });
+        this.emit({ type: "feedback", kind: "finisher" });
         if (this.dummyHP > 0) this.say("決めの一撃！", 1000);
       }
       return;
@@ -311,12 +313,13 @@ export class Practice extends GameState {
         this.deadAt < 0 &&
         this.clock - this.healAt >= T.heal.duration
       ) {
-        this.hp = Math.min(T.player.hp, this.hp + T.heal.amount);
+        const restored = Math.min(T.heal.amount, T.player.hp - this.hp);
+        this.hp += restored;
         this.healsLeft--;
         this.healAt = -1;
-        this.emit({ type: "sound", kind: "growth" });
-        this.emit({ type: "growth", x: this.x, y: this.y - 60 });
-        this.say("HPを回復！", 900);
+        this.emit({ type: "sound", kind: "heal" });
+        this.emit({ type: "heal", x: this.x, y: this.y - 40 });
+        this.say(`HP +${restored} / 修復完了`, 900);
       }
       finishEnemyCycle(this);
       return;
@@ -392,7 +395,7 @@ export class Practice extends GameState {
       const damage = this.flower.damage(T.weapon.damage);
       this.hitDummy(damage);
       this.emit({ type: "sound", kind: "hit" });
-      this.freeze = T.weapon.stop;
+      this.freeze = Math.max(this.freeze, T.weapon.stop);
       this.recoil = 8;
       this.emit({
         type: "impact",

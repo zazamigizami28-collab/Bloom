@@ -1,4 +1,5 @@
 export type SoundKind =
+  | "heal"
   | "parry"
   | "perfect"
   | "break"
@@ -21,7 +22,28 @@ export type SoundKind =
   | "quake";
 export class AudioFeedback {
   ctx?: AudioContext;
-  muted = false;
+  private silent = false;
+  volume = 0.6;
+  master?: GainNode;
+  effects?: GainNode;
+  get muted() {
+    return this.silent;
+  }
+  set muted(value: boolean) {
+    this.silent = value;
+    this.applyVolume();
+  }
+  setVolume(value: number) {
+    this.volume = Math.max(0, Math.min(1, value));
+    this.applyVolume();
+  }
+  private applyVolume() {
+    if (this.master && this.ctx)
+      this.master.gain.setValueAtTime(
+        this.silent ? 0 : this.volume,
+        this.ctx.currentTime,
+      );
+  }
   output?: DynamicsCompressorNode;
   ring?: GainNode;
   dispose() {
@@ -29,6 +51,8 @@ export class AudioFeedback {
     this.ctx = undefined;
     this.output = undefined;
     this.ring = undefined;
+    this.master = undefined;
+    this.effects = undefined;
   }
   unlock() {
     if (!this.ctx) {
@@ -39,8 +63,10 @@ export class AudioFeedback {
       limiter.ratio.value = 8;
       limiter.attack.value = 0.002;
       limiter.release.value = 0.18;
-      const master = c.createGain();
-      master.gain.value = 0.6;
+      const master = (this.master = c.createGain());
+      this.effects = c.createGain();
+      this.effects.connect(limiter);
+      master.gain.value = this.muted ? 0 : this.volume;
       limiter.connect(master);
       master.connect(c.destination);
       const send = (this.ring = c.createGain()),
@@ -54,7 +80,7 @@ export class AudioFeedback {
       filter.frequency.value = 5400;
       send.connect(delay);
       delay.connect(filter);
-      filter.connect(limiter);
+      filter.connect(this.effects!);
       filter.connect(feedback);
       feedback.connect(delay);
     }
@@ -62,6 +88,17 @@ export class AudioFeedback {
   }
   play(kind: SoundKind) {
     if (!this.ctx || this.muted || !this.output) return;
+    if (kind === "cue" || kind === "quakeCue") {
+      const t = this.ctx.currentTime;
+      this.effects!.gain.cancelScheduledValues(t);
+      this.effects!.gain.setValueAtTime(0.35, t);
+      this.effects!.gain.linearRampToValueAtTime(1, t + 0.18);
+    }
+    if (kind === "heal") {
+      this.tone(420, 540, 0.1, 0.14);
+      this.tone(840, 840, 0.08, 0.3, 0.09);
+      return;
+    }
     if (kind === "phase") {
       this.tone(130, 260, 0.16, 0.8);
       this.tone(390, 780, 0.08, 0.7, 0.12);
@@ -171,7 +208,7 @@ export class AudioFeedback {
       );
       g.gain.exponentialRampToValueAtTime(0.0001, t + decay);
       o.connect(g);
-      g.connect(this.output!);
+      g.connect(kind === "cue" ? this.output! : this.effects!);
       if (metal) g.connect(this.ring!);
       o.start(t);
       o.stop(t + decay + 0.02);
@@ -191,7 +228,7 @@ export class AudioFeedback {
       gain.gain.value = metal ? 0.3 : 0.18;
       source.connect(filter);
       filter.connect(gain);
-      gain.connect(this.output);
+      gain.connect(this.effects!);
       source.start(t);
     }
   }
@@ -213,7 +250,7 @@ export class AudioFeedback {
     g.gain.exponentialRampToValueAtTime(volume, t + 0.006);
     g.gain.exponentialRampToValueAtTime(0.0001, t + duration);
     o.connect(g);
-    g.connect(this.output!);
+    g.connect(this.effects!);
     o.start(t);
     o.stop(t + duration + 0.02);
   }
@@ -232,7 +269,7 @@ export class AudioFeedback {
     g.gain.value = volume;
     s.connect(f);
     f.connect(g);
-    g.connect(this.output!);
+    g.connect(this.effects!);
     s.start();
   }
 }

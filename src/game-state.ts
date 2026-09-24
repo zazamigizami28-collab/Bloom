@@ -71,6 +71,7 @@ export class GameState {
   attackAt = -9999;
   attackHit = false;
   hurtAt = -9999;
+  enemyHitAt = -9999;
   cycle = 0;
   resolved = new Set<number>();
   cued = new Set<number>();
@@ -81,7 +82,7 @@ export class GameState {
   attempts = 0;
   dummyHP = 100;
   recoil = 0;
-  message = "黄色い光に合わせて K / RB";
+  message = "近接は収束と合図音に K / RB";
   messageUntil = 0;
   breakMeter = new BreakMeter();
   defeatedAt = -1;
@@ -167,6 +168,7 @@ export function snapshot(state: GameState) {
     attackAt: state.attackAt,
     attackHit: state.attackHit,
     hurtAt: state.hurtAt,
+    enemyHitAt: state.enemyHitAt,
     cycle: state.cycle,
     pattern: state.pattern,
     combo: state.combo,

@@ -1,6 +1,7 @@
 export const MIN_TELEGRAPH_MS = 160;
 export const TELEGRAPH_LIGHT_MS = 480;
 export const tuning = {
+  bossHit: { stop: 35, flash: 85 },
   player: {
     hp: 5,
     speed: 245,

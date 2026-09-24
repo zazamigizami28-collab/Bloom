@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>花守り — パリィ稽古</title>
+    <title>花守り — HRT-01</title>
     <link
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23eaa076' d='M7 15h18l-3 14H10z'/%3E%3Cpath stroke='%239edb77' stroke-width='4' d='M16 15V4l8 3M16 10L8 5'/%3E%3C/svg%3E"
@@ -16,7 +16,7 @@
           <span class="mark">✳</span>
           <h1>花守り <small>HANAMORI</small></h1>
         </div>
-        <span class="edition">開発版 0.6.11 <i>／</i> 温室の番人</span
+        <span class="edition">開発版 0.7.0 <i>／</i> 温室の番人</span
         ><button id="sound">音：ON</button>
       </header>
       <section class="game-shell">
@@ -26,7 +26,7 @@
             <p class="eyebrow">忘れられた温室 / 園芸管理機 HRT-01</p>
             <h2>その一撃を、<br /><em>咲く力に。</em></h2>
             <p>
-              白い圧縮弾は弾き、青い水・金の肥料を取り込もう。<br />橙に光る地面攻撃はジャンプ。
+              白い弾は弾き、青い水を取り込もう。<br />赤い高枝の最終段はローリングで回避。
             </p>
             <button id="play" class="primary">番人に挑む <span>↵</span></button>
             <p class="small">キーボード・ゲームパッド対応 / 音あり推奨</p>
@@ -46,6 +46,19 @@
             <button id="rematch" class="primary">もう一度挑む</button>
           </div>
         </div>
+      </section>
+      <section class="settings" aria-label="演出設定">
+        <label
+          >音量 <input id="volume" type="range" min="0" max="100" value="60"
+        /></label>
+        <label
+          >画面の揺れ
+          <select id="shake">
+            <option value="1">標準</option>
+            <option value="0.4">弱</option>
+            <option value="0">なし</option>
+          </select></label
+        >
       </section>
       <section class="bottom">
         <div>
@@ -83,7 +96,7 @@
         <summary>開発メニュー <span>F2</span></summary>
         <div class="debug-grid">
           <label><input type="checkbox" id="invincible" /> 無敵</label
-          ><label><input type="checkbox" id="stopAI" /> 練習機AI停止</label
+          ><label><input type="checkbox" id="stopAI" /> 敵AI停止</label
           ><label><input type="checkbox" id="hitboxes" /> 当たり判定</label
           ><label><input type="checkbox" id="parrybox" /> パリィ判定</label
           ><label
@@ -136,32 +149,36 @@
           </thead>
           <tbody>
             <tr>
-              <td>距離への反応</td>
-              <td>各段の直前まで方向が追従し、直前の回避が間に合うか</td>
+              <td>命中の手応え</td>
+              <td>通常攻撃・花風でボスが白く光り、短い停止で命中が伝わるか</td>
             </tr>
             <tr>
-              <td>混合射出</td>
-              <td>通常弾→通常弾→水。大きい弾を見分けて受けられるか</td>
+              <td>予兆とSE</td>
+              <td>連続パリィやBREAKでも、次の収束光と合図音を認識できるか</td>
             </tr>
             <tr>
-              <td>番人の予兆</td>
+              <td>回復</td>
               <td>
-                剪定の横薙ぎ・頭上・切り上げ。収束光→大きい発光と音で受けられるか
+                修復音と緑のリングが成長と区別でき、中断時は完了演出が出ないか
               </td>
             </tr>
             <tr>
-              <td>赤い予兆</td>
-              <td>高枝剪定の最後だけ赤い攻撃。ローリングで回避</td>
+              <td>HUD・揺れ</td>
+              <td>
+                HP・回復・開花時間を読み取れるか。揺れ弱/なしでも手応えがあるか
+              </td>
             </tr>
             <tr>
-              <td>1戦の手応え</td>
-              <td>短枝の2段目を見て押せるか。赤い攻撃の頻度は適切か</td>
+              <td>開花とジャスト</td>
+              <td>
+                開花の方向性が保たれ、ジャストの白い芯が次の予兆を隠さないか
+              </td>
             </tr>
           </tbody>
         </table>
       </section>
       <footer>
-        <span>PHASE 06 <b>園芸管理機 HRT-01</b></span
+        <span>PHASE 07 <b>園芸管理機 HRT-01</b></span
         ><span>パリィで崩し、スコップで攻める。</span>
       </footer>
     </main>

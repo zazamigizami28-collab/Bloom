@@ -78,6 +78,21 @@ class Garden extends Phaser.Scene {
       color: "#fff1b2",
       lineSpacing: 3,
     });
+    const hudObjects = [
+      this.hud,
+      this.readout,
+      this.hint,
+      this.label,
+      this.breakText,
+      this.flowerText,
+    ];
+    const hudCamera = this.cameras.add(0, 0, 1024, 576);
+    hudCamera.ignore(
+      this.children.list.filter(
+        (child) => !hudObjects.includes(child as Phaser.GameObjects.Text),
+      ),
+    );
+    this.cameras.main.ignore(hudObjects);
     const disposeUI = bindControls(this.model, this.soundFX);
     const context = (
       document as Document & {
@@ -126,7 +141,13 @@ class Garden extends Phaser.Scene {
       this.model.drainEvents(),
       this.soundFX,
       this.sparks,
-      (duration, intensity) => this.cameras.main.shake(duration, intensity),
+      (duration, intensity) => {
+        const scale = Number(
+          (document.getElementById("shake") as HTMLSelectElement | null)
+            ?.value ?? 1,
+        );
+        if (scale > 0) this.cameras.main.shake(duration, intensity * scale);
+      },
     );
     const state = snapshot(this.model);
     this.label.setPosition(state.enemyX, state.mode === "boss" ? 140 : 285);

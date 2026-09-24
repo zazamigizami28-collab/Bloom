@@ -1,4 +1,4 @@
-import { drawTelegraph } from "./telegraph";
+import { drawTelegraph, beginTelegraphs, flushTelegraphs } from "./telegraph";
 import { drawBoss } from "./boss-view";
 import Phaser from "phaser";
 import type { GameSnapshot } from "./game-state";
@@ -24,6 +24,7 @@ export function drawScene(
     (document.getElementById(id) as HTMLInputElement).checked;
   const g = view.g;
   g.clear();
+  beginTelegraphs();
   const p = scene.attackPattern,
     next = p.events.find(
       (event) =>
@@ -317,6 +318,7 @@ export function drawScene(
     );
   }
   sparks.draw(g);
+  flushTelegraphs();
   if (checked("hitboxes")) {
     g.lineStyle(1, 0xff667a);
     g.strokeRect(scene.x - 15, scene.y - 59, 30, 59);
@@ -394,10 +396,12 @@ export function drawScene(
       : `ひまわり  ${scene.flower.name}  水${scene.flower.water}/${T.flower.thresholds[3]}\n${T.flower.thresholds[3] - scene.flower.water}回の散水パリィで開花 / 開花中は通常攻撃に花風を追加`,
   );
   view.hud.setText(
-    `花守り  ${"●".repeat(Math.max(0, scene.hp))}${"○".repeat(T.player.hp - Math.max(0, scene.hp))}\n${scene.flower.name}  水${scene.flower.water}/${T.flower.thresholds[3]} 肥料${scene.flower.fertilizer}/3  回復 E/Y：${scene.healsLeft}/3`,
+    `花守り  ${"●".repeat(Math.max(0, scene.hp))}${"○".repeat(T.player.hp - Math.max(0, scene.hp))}\n回復 E/Y：${scene.healsLeft}/3${scene.mode === "practice" || scene.flower.fertilizer > 0 ? "  肥料 " + scene.flower.fertilizer + "/3" : ""}`,
   );
   view.readout.setText(
-    `連続成功  ${String(scene.combo).padStart(2, "0")}   /   BEST ${String(scene.best).padStart(2, "0")}\n成功 ${scene.success} / 接触 ${scene.attempts}`,
+    scene.mode === "boss"
+      ? ""
+      : `連続成功  ${String(scene.combo).padStart(2, "0")}   /   BEST ${String(scene.best).padStart(2, "0")}\n成功 ${scene.success} / 接触 ${scene.attempts}`,
   );
   view.hint.setText(
     scene.clock < scene.messageUntil
@@ -407,7 +411,7 @@ export function drawScene(
           ? "赤い剪定：Space / Bでローリング"
           : next?.kind === "quake"
             ? "赤い地面：W / Aでジャンプ"
-            : "打撃はK / RB。水と肥料も受け止めよう"
+            : "近接は合図音、水と通常弾は届く瞬間に K / RB"
         : scene.x < 570
           ? "練習機に近づこう →"
           : scene.x > scene.enemyX
@@ -416,7 +420,7 @@ export function drawScene(
                 scene.pattern === "fertilizer" ||
                 scene.pattern === "garden"
               ? "水・肥料は届く瞬間に K / RB"
-              : "光ったら K / RB",
+              : "収束と合図音に K / RB",
   );
   view.label.setText(
     scene.mode === "boss"
