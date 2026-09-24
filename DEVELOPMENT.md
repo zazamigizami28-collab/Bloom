@@ -139,4 +139,4 @@ AUDIT-0.6.9.md優先。赤い攻撃は高枝最終段のみ、地面攻撃は選
 
 
 ## v0.6.11 現行基準
-HRT-01開発終了（ユーザー判断）、Phase 7未着手。光だけ320msへ延長、音/白化/方向固定160ms。docs/HRT-01-RETROSPECTIVE.mdとdocs/BOSS-DEVELOPMENT-GUIDE.mdを次ボス着手前に読む。
+HRT-01開発終了（ユーザー判断）、Phase 7未着手。光を480msへ修正し、白化は240ms前。音/方向固定は160ms前を維持し、最終合図の最低160msと受付180msは維持する。docs/HRT-01-RETROSPECTIVE.mdとdocs/BOSS-DEVELOPMENT-GUIDE.mdを次ボス着手前に読む。
