@@ -143,3 +143,6 @@ HRT-01開発終了（ユーザー判断）、Phase 7未着手。光を480msへ�
 
 ## v0.7.0 現行基準
 Phase 7評価版。AUDIT-0.7.0.md優先。ボス命中時enemyHitAt/35ms停止はhitDummyで共通化しresetで消去。telegraphの描画を1フレーム内で収集し粒子後にflush。feedbackイベントでBREAK/一撃の揺れをpresentationへ分離。回復healイベントは成長と独立。HUD Textは別カメラ、背景と戦闘描画だけ揺らす。
+
+## v0.7.1 現行基準
+開始コマンド/Startはbegin(true)で1200ms導入、低レベルbegin()は演出なしの初期化。敗北はdefeat()へ集約、900ms後の自動再戦は導入を繰り返さない。勝利結果は1100ms後。全表示はsnapshot/ゲーム時計から導出し休止に従う。文書索引docs/README.md。

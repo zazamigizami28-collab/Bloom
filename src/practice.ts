@@ -31,10 +31,10 @@ export class Practice extends GameState {
     switch (command.type) {
       case "mode":
         this.mode = command.value;
-        this.begin();
+        this.begin(true);
         break;
       case "begin":
-        this.begin();
+        this.begin(true);
         break;
       case "pause":
         this.pause(command.value);
@@ -49,6 +49,7 @@ export class Practice extends GameState {
         this.healAt = -1;
         this.hp = T.player.hp;
         this.deadAt = -1;
+        this.introAt = -1;
         break;
       case "replay":
         this.healAt = -1;
@@ -86,10 +87,25 @@ export class Practice extends GameState {
         break;
     }
   }
-  begin() {
+  begin(withIntro = false) {
     this.paused = false;
     this.started = true;
     this.reset(false);
+    if (withIntro && this.mode === "boss") {
+      this.introAt = this.clock;
+      this.emit({ type: "sound", kind: "startup" });
+      this.say("園芸管理機 HRT-01 / 起動", T.encounter.intro);
+    }
+  }
+  defeat() {
+    if (this.deadAt >= 0) return;
+    this.deadAt = this.clock;
+    this.introAt = -1;
+    this.healAt = -1;
+    this.projectiles = [];
+    this.waves = [];
+    this.emit({ type: "sound", kind: "defeat" });
+    this.say("まだ、芽吹ける。", T.retry);
   }
   pause(v: boolean) {
     this.paused = v;
@@ -116,6 +132,7 @@ export class Practice extends GameState {
     this.attackHit = false;
     this.recoil = 0;
     this.deadAt = -1;
+    this.introAt = -1;
     this.parryAt = -9999;
     this.attackAt = -9999;
     this.hurtAt = -9999;
@@ -209,7 +226,7 @@ export class Practice extends GameState {
     this.messageUntil = this.clock + duration;
   }
   update(input: ActionInput, delta: number) {
-    if (input.start && !this.started) this.begin();
+    if (input.start && !this.started) this.begin(true);
     if (input.pause && this.started) this.pause(!this.paused);
     if (!this.started || this.paused) return;
     if (this.freeze > 0) {
@@ -223,7 +240,15 @@ export class Practice extends GameState {
     this.clock += dt;
     this.emit({ type: "tick", dt: dt });
     if (this.deadAt >= 0) {
+      this.introAt = -1;
       if (this.clock - this.deadAt > T.retry) this.reset(false);
+      return;
+    }
+    if (this.introAt >= 0) {
+      if (this.clock - this.introAt >= T.encounter.intro) {
+        this.introAt = -1;
+        this.restartCycle();
+      }
       return;
     }
     if (this.mode === "boss" && this.defeatedAt >= 0) return;

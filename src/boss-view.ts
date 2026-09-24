@@ -30,7 +30,9 @@ export function drawBoss(
   const h = T.boss.height;
   const lift =
     broken || defeated
-      ? 12
+      ? defeated
+        ? 12 + Math.min(1, (state.clock - state.defeatedAt) / 700) * 16
+        : 12
       : Math.sin(state.clock / 350) * 2 + state.recoil * 0.22;
   // Low tracks, a water reservoir and fertilizer hopper retain the original
   // procedural machine style. Silhouette height is five player hurtboxes.
@@ -69,7 +71,8 @@ export function drawBoss(
     fill(0x8a6c38);
     g.fillCircle(x + 18 + (i % 3) * 10, y - 196 + Math.floor(i / 3) * 20, 3);
   }
-  const ready = !broken && !defeated && state.boss.transition === 0;
+  const ready =
+    !broken && !defeated && state.introAt < 0 && state.boss.transition === 0;
   const motion = ready ? wind : 0;
   const projectile =
     kind === "water" || kind === "fertilizer" || kind === "pellet";

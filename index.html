@@ -16,7 +16,7 @@
           <span class="mark">✳</span>
           <h1>花守り <small>HANAMORI</small></h1>
         </div>
-        <span class="edition">開発版 0.7.0 <i>／</i> 温室の番人</span
+        <span class="edition">開発版 0.7.1 <i>／</i> 温室の番人</span
         ><button id="sound">音：ON</button>
       </header>
       <section class="game-shell">
@@ -32,13 +32,20 @@
             <p class="small">キーボード・ゲームパッド対応 / 音あり推奨</p>
           </div>
         </div>
+        <div id="encounter" class="encounter" hidden aria-live="polite">
+          <div class="encounter-title">
+            <small id="encounter-sub"></small>
+            <h2 id="encounter-title"></h2>
+            <p id="encounter-note"></p>
+          </div>
+        </div>
         <div id="pause" class="veil" hidden>
           <div>
             <h2>ひとやすみ</h2>
             <button id="resume" class="primary">稽古に戻る</button>
           </div>
         </div>
-        <div id="victory" class="veil" hidden>
+        <div id="victory" class="veil victory-veil" hidden>
           <div>
             <p class="eyebrow">園芸管理機 HRT-01</p>
             <h2>温室に、<br /><em>穏やかな風が戻った。</em></h2>

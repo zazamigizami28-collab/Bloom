@@ -98,6 +98,7 @@ export class GameState {
   finisherAt = -9999;
   finisherDone = true;
   deadAt = -1;
+  introAt = -1;
   waves: {
     x: number;
     y: number;
@@ -184,6 +185,7 @@ export function snapshot(state: GameState) {
     finisherAt: state.finisherAt,
     finisherDone: state.finisherDone,
     deadAt: state.deadAt,
+    introAt: state.introAt,
     sessionStatus: state.sessionStatus,
     playerAction: state.playerAction,
     enemyStatus: state.enemyStatus,

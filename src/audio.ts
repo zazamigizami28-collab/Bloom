@@ -1,4 +1,6 @@
 export type SoundKind =
+  | "startup"
+  | "defeat"
   | "heal"
   | "parry"
   | "perfect"
@@ -97,6 +99,17 @@ export class AudioFeedback {
     if (kind === "heal") {
       this.tone(420, 540, 0.1, 0.14);
       this.tone(840, 840, 0.08, 0.3, 0.09);
+      return;
+    }
+    if (kind === "startup") {
+      this.tone(75, 180, 0.09, 0.65);
+      this.tone(540, 540, 0.045, 0.12, 0.25);
+      this.tone(810, 810, 0.04, 0.18, 0.55);
+      return;
+    }
+    if (kind === "defeat") {
+      this.tone(260, 130, 0.075, 0.35);
+      this.tone(196, 147, 0.045, 0.48, 0.1);
       return;
     }
     if (kind === "phase") {

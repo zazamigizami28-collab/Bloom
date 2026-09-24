@@ -100,8 +100,7 @@ export function updateEnemy(game: Practice, dt: number) {
           game.combo = 0;
           game.say("赤い地面攻撃はジャンプで越えよう", 1300);
           if (game.hp <= 0) {
-            game.deadAt = game.clock;
-            game.say("ひと息ついて、もう一度。", T.retry);
+            game.defeat();
           }
         }
       }
@@ -183,8 +182,7 @@ export function updateEnemy(game: Practice, dt: number) {
                     : "攻撃が先に届いた — 収束と合図音に K",
             );
             if (game.hp <= 0) {
-              game.deadAt = game.clock;
-              game.say("ひと息ついて、もう一度。", T.retry);
+              game.defeat();
             }
           }
         }

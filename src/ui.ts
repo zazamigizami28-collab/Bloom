@@ -1,3 +1,4 @@
+import { renderEncounter } from "./encounter-view";
 import { patterns, tuning as T } from "./data";
 import type { PracticeCommands } from "./commands";
 import type { GameSnapshot } from "./game-state";
@@ -83,7 +84,12 @@ function isPattern(value: string): value is keyof typeof patterns {
   return Object.hasOwn(patterns, value);
 }
 export function renderControls(state: GameSnapshot) {
-  el("victory").hidden = !(state.mode === "boss" && state.defeatedAt >= 0);
+  el("victory").hidden = !(
+    state.mode === "boss" &&
+    state.defeatedAt >= 0 &&
+    state.clock - state.defeatedAt >= T.encounter.victoryReveal
+  );
+  renderEncounter(state);
   el<HTMLButtonElement>("bossMode").textContent =
     state.mode === "boss" ? "ボス戦をやり直す" : "番人に挑む";
   el<HTMLSelectElement>("pattern").disabled = state.mode === "boss";

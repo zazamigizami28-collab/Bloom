@@ -59,8 +59,7 @@ export function updateSpecial(game: Practice, dt: number) {
           game.emit({ type: "sound", kind: "hurt" });
           game.say("水・肥料は、弾が届く瞬間に K / RB");
           if (game.hp <= 0) {
-            game.deadAt = game.clock;
-            game.say("ひと息ついて、もう一度。", T.retry);
+            game.defeat();
           }
         }
       }
@@ -68,4 +67,5 @@ export function updateSpecial(game: Practice, dt: number) {
     }
     return p.x > -30 && p.x < T.world.right + 50;
   });
+  if (game.deadAt >= 0) game.projectiles = [];
 }

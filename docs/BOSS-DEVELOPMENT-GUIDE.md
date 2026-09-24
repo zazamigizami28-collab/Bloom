@@ -30,3 +30,6 @@ npm run checkを通す。段時刻順序・光の境界・160ms前の音に合�
 
 ## 8. 保存と変更管理
 ChatGPT Workで編集、GitHubを正本として各版保存。変更前後を別コミットにし、README/CHANGELOG/AUDITへ理由と評価を記録。公開したソースとGitHubのツリー一致を確認。トークンや生成物を保存しない。復旧はGitHub取得→npm ci→npm run check→起動。ユーザーの評価を受けるまでは自動テストだけで完成と宣言しない。
+
+## 共通基準
+新ボス着手時は[BOSS-STANDARDS.md](BOSS-STANDARDS.md)を併読する。ユーザー提供の設計論をBloom向けの作業手順へ整理した基準。

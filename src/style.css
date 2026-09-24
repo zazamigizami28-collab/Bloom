@@ -293,3 +293,51 @@ footer b {
   gap: 10px;
   align-items: center;
 }
+.encounter {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  z-index: 2;
+  border-block: 32px solid #112924df;
+  background: linear-gradient(90deg, #10262355, transparent, #10262355);
+}
+.encounter-title {
+  padding: 20px 40px;
+  border-block: 1px solid #d5ecb880;
+  background: #122d3099;
+  transform: translateY(calc((1 - var(--progress)) * 12px));
+}
+.encounter small {
+  letter-spacing: 4px;
+  color: #bceac9;
+}
+.encounter h2 {
+  font-size: clamp(24px, 4vw, 46px);
+  margin: 10px 0;
+  color: #e9f8cc;
+}
+.encounter p {
+  margin: 8px;
+  color: #cce4ce;
+}
+.encounter.regrow {
+  background: #152f36a8;
+  border-color: #152f36;
+}
+.encounter.regrow h2 {
+  font-size: clamp(22px, 3vw, 36px);
+}
+.encounter.quiet {
+  background: linear-gradient(0deg, #a2d99844, transparent);
+  border-color: #c6e9b02b;
+}
+.victory-veil {
+  background: linear-gradient(90deg, #173f31e8, #386e4766 60%, #bad98e22);
+}
+#pause {
+  z-index: 4;
+}

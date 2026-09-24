@@ -62,3 +62,44 @@ assert(!events.some((e) => e.type === "growth"));
 console.log(
   "PASS: boss hit stop/flash/reset, warning foreground, independent heal feedback.",
 );
+{
+  const { element } = await import("./loader.mjs");
+  const { renderControls } = load("ui");
+  element("encounter").style = { setProperty() {} };
+  const battle = new Practice("boss");
+  battle.command({ type: "begin" });
+  const initialCycle = battle.cycle;
+  battle.update({ attack: true, move: 1 }, 34);
+  assert.equal(battle.cycle, initialCycle);
+  assert.equal(battle.attackAt, -9999);
+  battle.pause(true);
+  const clock = battle.clock;
+  battle.update({}, 34);
+  assert.equal(battle.clock, clock);
+  battle.pause(false);
+  for (let i = 0; i < 36; i++) battle.update({}, 34);
+  assert.equal(battle.introAt, -1);
+  battle.hp = 0;
+  battle.defeat();
+  battle.defeat();
+  assert.equal(
+    battle
+      .drainEvents()
+      .filter((e) => e.type === "sound" && e.kind === "defeat").length,
+    1,
+  );
+  for (let i = 0; i < 28; i++) battle.update({}, 34);
+  assert.equal(battle.hp, 5);
+  assert.equal(battle.introAt, -1);
+  battle.hitDummy(999);
+  renderControls(snapshot(battle));
+  assert.equal(element("victory").hidden, true);
+  battle.clock = battle.defeatedAt + T.encounter.victoryReveal;
+  renderControls(snapshot(battle));
+  assert.equal(element("victory").hidden, false);
+  battle.command({ type: "mode", value: "practice" });
+  assert.equal(battle.introAt, -1);
+  console.log(
+    "PASS: encounter intro gate/pause, defeat once/retry, victory reveal, mode cleanup.",
+  );
+}
