@@ -21,6 +21,16 @@ export class GameState {
   restoredGarden = false;
   pathWater = false;
   pathValve = false;
+  scouts = [1700, 2240].map((x) => ({
+    x,
+    hp: 20,
+    strikeAt: -1,
+    readyAt: 0,
+    cued: false,
+    face: -1,
+    hitAt: -9999,
+    attackUntil: -1,
+  }));
   mode: "practice" | "boss" = "practice";
   boss = new Boss();
   get attackPattern(): AttackPattern {
@@ -144,6 +154,7 @@ export function snapshot(state: GameState) {
     restoredGarden: state.restoredGarden,
     pathWater: state.pathWater,
     pathValve: state.pathValve,
+    scouts: state.scouts.map((enemy) => ({ ...enemy })),
     mode: state.mode,
     healing: state.healing,
     healAt: state.healAt,

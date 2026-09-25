@@ -9,6 +9,7 @@ export function movePlayer(
   guarding: boolean,
 ) {
   const before = game.x;
+  const right = game.location === "path" ? T.journey.length : T.world.right;
   if (game.rolling) {
     game.x = clamp(
       game.x +
@@ -17,7 +18,7 @@ export function movePlayer(
           Math.min(dt, T.roll.duration - (game.clock - game.rollAt))) /
           1000,
       T.world.left,
-      T.world.right,
+      right,
     );
     return;
   }
@@ -27,7 +28,7 @@ export function movePlayer(
       game.x +
         ((input.move * T.player.speed * dt) / 1000) * (guarding ? 0.5 : 1),
       T.world.left,
-      T.world.right,
+      right,
     );
   }
   if (input.jump && game.y >= T.world.ground) {

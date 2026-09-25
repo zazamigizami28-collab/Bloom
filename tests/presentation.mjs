@@ -118,7 +118,7 @@ console.log(
   game.update({ move: 1 }, 34);
   assert.equal(game.clock, now);
   game.pause(false);
-  game.x = 900;
+  game.x = T.journey.length - 10;
   game.command({ type: "interact" });
   assert.equal(game.location, "gate");
   game.x = 900;
@@ -140,5 +140,52 @@ console.log(
   assert.equal(game.hp, 5);
   console.log(
     "PASS: hub/exploration/gate/boss/return loop, pause, gate condition, practice isolation.",
+  );
+}
+{
+  const { journeyTarget } = load("journey");
+  const game = new Practice();
+  game.command({ type: "home" });
+  game.x = 420;
+  assert(journeyTarget(snapshot(game)));
+  game.y = T.world.ground - 30;
+  assert.equal(journeyTarget(snapshot(game)), "");
+  game.y = T.world.ground;
+  game.x = 220;
+  game.update({ roll: true, move: 1 }, 10);
+  assert(game.rolling);
+  const start = game.x;
+  for (let i = 0; i < 42; i++) game.update({}, 10);
+  assert(game.x > start + 160);
+  game.command({ type: "home" });
+  game.x = 900;
+  game.command({ type: "interact" });
+  game.x = 1400;
+  game.update({ move: 1 }, 34);
+  assert(game.x > 1400, "path is wider than combat arena");
+  game.x = game.scouts[0].x - 65;
+  game.face = 1;
+  game.scouts[0].strikeAt = game.clock + 100;
+  game.update({ parry: true }, 10);
+  for (let i = 0; i < 10; i++) game.update({}, 10);
+  assert.equal(game.hp, 5, "weak foe uses normal parry timing");
+  assert(
+    game
+      .drainEvents()
+      .some(
+        (e) =>
+          e.type === "sound" && (e.kind === "parry" || e.kind === "perfect"),
+      ),
+  );
+  game.freeze = 0;
+  game.debug.stopAI = true;
+  for (let n = 0; n < 2; n++) {
+    game.update({ attack: true }, 10);
+    for (let i = 0; i < 45; i++) game.update({}, 10);
+  }
+  assert.equal(game.scouts[0].hp, 0, "two shovel hits defeat weak foe");
+  assert.equal(game.scouts[1].hp, 20);
+  console.log(
+    "PASS: shared prompt, airborne exclusion, exploration roll, scroll bounds and weak enemy parry/two-hit defeat.",
   );
 }

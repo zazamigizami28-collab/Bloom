@@ -28,6 +28,7 @@ export function drawScene(
   const checked = (id: string) =>
     (document.getElementById(id) as HTMLInputElement).checked;
   const g = view.g;
+  g.setPosition(0, 0);
   g.clear();
   beginTelegraphs();
   const p = scene.attackPattern,

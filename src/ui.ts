@@ -1,3 +1,4 @@
+import { journeyTarget } from "./journey";
 import { renderEncounter } from "./encounter-view";
 import { patterns, tuning as T } from "./data";
 import type { PracticeCommands } from "./commands";
@@ -94,6 +95,8 @@ export function renderControls(state: GameSnapshot) {
   );
   renderEncounter(state);
   el("interact").hidden = state.location === "battle";
+  el<HTMLButtonElement>("interact").disabled =
+    !journeyTarget(state) || state.deadAt >= 0 || state.paused;
   el<HTMLButtonElement>("bossMode").textContent =
     state.mode === "boss" ? "ボス戦をやり直す" : "番人に挑む";
   el<HTMLSelectElement>("pattern").disabled = state.mode === "boss";

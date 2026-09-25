@@ -39,7 +39,8 @@ export class Practice extends GameState {
         this.x = 220;
         return;
       case "interact":
-        if (!this.paused) interactJourney(this);
+        if (!this.paused && this.started && this.deadAt < 0)
+          interactJourney(this);
         return;
       case "mode":
         this.mode = command.value;

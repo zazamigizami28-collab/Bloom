@@ -149,3 +149,6 @@ Phase 7評価版。AUDIT-0.7.0.md優先。ボス命中時enemyHitAt/35ms停止�
 
 ## v0.8.0 現行基準
 Phase 9評価版。locationはhub/path/gate/battleでmodeとは別。非戦闘はjourneyで更新しAI/戦闘処理へ入らない。home命令で戦闘状態を初期化、勝利後ならrestoredGardenを保持。開始画面は庭へ。既存beginは直接戦闘の初期化。ボス死亡リトライはbattle内を維持。画面リロード時の進行保存は未実装。
+
+## v0.8.1
+journeyTargetが操作とプロンプトの共通判定。pathだけ右端2700、表示はGraphics位置で追従し戦闘時に原点へ戻す。小型整備機はscoutsのコピーをsnapshotへ渡す。出発時初期化。探索ロールも既存時間/距離。

@@ -1,6 +1,7 @@
 export const MIN_TELEGRAPH_MS = 160;
 export const TELEGRAPH_LIGHT_MS = 480;
 export const tuning = {
+  journey: { length: 2700, foeHP: 20, foeRange: 120, windup: 1000, rest: 1500 },
   encounter: { intro: 1200, victoryReveal: 1100 },
   bossHit: { stop: 35, flash: 85 },
   player: {
